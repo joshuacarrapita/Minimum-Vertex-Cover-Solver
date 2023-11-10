@@ -33,7 +33,7 @@ int calc_upper_bound(){
     return vertices;//TODO: calculate upper bound
 }
 
-void add_to_list(unsigned int vertex){
+void add_to_degree_list(unsigned int vertex){
     unsigned int current_degree = degree[vertex];
     if (degree_list[current_degree] == -1){
         degree_list[current_degree] = vertex;
@@ -46,7 +46,7 @@ void add_to_list(unsigned int vertex){
     }
 }
 
-void remove_from_list(unsigned int vertex){
+void remove_from_degree_list(unsigned int vertex){
     unsigned int current_degree = degree[vertex];
     if(degree_list[current_degree] == vertex){
         degree_list[current_degree] = degree_list_next[vertex];
@@ -64,19 +64,35 @@ void delete_vertex(int vertex, bool put_in_vc){
 }
 
 void reverse_commands(int stack_checkpoint){
-    //TODO: reverse command_stack up until stack_top == stack_checkpoint
-
-
-
-
+    while(stack_top > stack_checkpoint){
+        unsigned int v = command_stack[stack_top];
+        used[v] = 0;
+        add_to_degree_list(v);
+        if(degree[v] > maximum_degree){
+            maximum_degree = degree[v];
+        }
+        for(int i = 0, j = 0; j < degree[v];i++){
+            unsigned int w = adj[v][i];
+            if(used[w] == 0){
+                remove_from_degree_list(w);
+                degree[w]++;
+                add_to_degree_list(w);
+                j++;
+                if(degree[w] > maximum_degree){
+                    maximum_degree = degree[w];
+                }
+            }
+        }
+        stack_checkpoint--;
+    }
 }
 
 bool vc_branch(int k, int stack_checkpoint){
     //TODO: reduce data
-    if(k < 0){
+    if(k < 0){//no solution is found
         return false;
     }
-    if(maximum_degree <= 0){
+    if(maximum_degree <= 0){ //
         return true;
     }
     unsigned int v = degree_list[maximum_degree];
@@ -171,7 +187,7 @@ int main(int argc, char **argv){
     int degree_list_[maximum_degree + 1];//+1 because we have vertices with 0 adj
     degree_list = degree_list_;
     for(int i = 0; i < vertices; i++){
-        add_to_list(i);
+        add_to_degree_list(i);
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////
     ////Calculating Solution here

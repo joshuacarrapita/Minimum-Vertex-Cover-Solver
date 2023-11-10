@@ -44,8 +44,21 @@ void add_to_list(unsigned int vertex){
         degree_list_next[vertex] = first;
         degree_list_prev[vertex] = -1;
     }
-
 }
+
+void remove_from_list(unsigned int vertex){
+    unsigned int current_degree = degree[vertex];
+    if(degree_list[current_degree] == vertex){
+        degree_list[current_degree] = degree_list_next[vertex];
+    }
+    int next = degree_list_next[vertex];
+    int prev = degree_list_prev[vertex];
+    if(next != -1){degree_list_prev[next] = prev;}
+    if(prev != -1){degree_list_next[prev] = next;}
+    degree_list_next[vertex] = -1;
+    degree_list_prev[vertex] = -1;
+}
+
 void delete_vertex(int vertex, bool put_in_vc){
     //TODO: set used[vertex], decrease degree of every adjacent and untouched vertex
 }
@@ -85,7 +98,7 @@ bool vc_branch(int k, int stack_checkpoint){
 }
 
 int main(int argc, char **argv){
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////parse input and initialize everything
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     char* line = NULL;
@@ -132,9 +145,9 @@ int main(int argc, char **argv){
         if (line[0] != '#') {
             //get vertices of edge
             ptr = strtok(line, " ");
-            int v = (unsigned int) strtol(ptr, (char **) NULL, 10) - 1;
+            unsigned int v = (unsigned int) strtol(ptr, (char **) NULL, 10) - 1;
             ptr = strtok(NULL, " ");
-            int w = (unsigned int) strtol(ptr, (char **) NULL, 10) - 1;
+            unsigned int w = (unsigned int) strtol(ptr, (char **) NULL, 10) - 1;
             //increase degree for both
             degree[v]++;
             degree[w]++;

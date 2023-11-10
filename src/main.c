@@ -7,22 +7,22 @@
 #include <string.h>
 
 unsigned int vertices; //number of vertices
-unsigned int edges;//number of edges
+unsigned int edges; //number of edges
 
-int **adj; //adjacency list for each vertex
+int **adj; //adjacency list for each vertex, not to be altered
 
-char *used;//is vertex used in vertex_cover (2), is it deleted(1) or untouched(0)
-unsigned int *degree;//array of the degree of each vertex, this is altered
+char *used; //is vertex used in vertex cover (2), is it deleted(1) or untouched(0)
+unsigned int *degree; //array of the degree of each vertex, this is altered
 
-int *degree_list;//start of list for each degree
+int *degree_list; //start of list for each degree
 int *degree_list_prev, *degree_list_next; //prev and next counter in degree_list, simulated as ints, not real pointer
 int maximum_degree;
 
-int *command_stack;//stack of command
+int *command_stack; //stack of command
 int stack_top = -1; //current size of stack i.e. where the last new entry of stack is
 
 int calc_lower_bound(){
-    return 0;//TODO: calculate lower bound
+    return 0; //TODO: calculate lower bound
 }
 
 void data_reduction(){
@@ -30,7 +30,7 @@ void data_reduction(){
 }
 
 int calc_upper_bound(){
-    return vertices;//TODO: calculate upper bound
+    return vertices; //TODO: calculate upper bound
 }
 
 void add_to_degree_list(unsigned int vertex){
@@ -60,7 +60,30 @@ void remove_from_degree_list(unsigned int vertex){
 }
 
 void delete_vertex(int vertex, bool put_in_vc){
-    //TODO: set used[vertex], decrease degree of every adjacent and untouched vertex
+	stack_top++;
+	command_stack[stack_top] = vertex;
+
+	if(put_in_vc) { 
+		used[vertex] = 2; // Vertex gets deleted and put in vertex cover
+	} else {
+		used[vertex] = 1; // Vertex gets deleted but not put in vertex cover
+	}
+
+	remove_from_degree_list(vertex);
+
+	for(int i = 0, j = 0; j < degree[v];i++){
+		int neighbour = used[adj[v][i]];
+        if(used[neighbour] == 0){
+			remove_from_degree_list(neighbour);
+			if(degree[neighbour] == maximum_degree && degree_list[maximum_degree] == -1){
+				maximum_degree--;
+			}
+			degree[neighbour]--;
+			add_to_degree_list(neighbour);
+            j++;
+        }
+    }
+
 }
 
 void reverse_commands(int stack_checkpoint){
@@ -101,7 +124,7 @@ bool vc_branch(int k, int stack_checkpoint){
         return true;
     }
     reverse_commands(stack_checkpoint);
-    for(int i = 0, j = 0; j < degree[v];i++){
+    for(int i = 0, j = 0; j < degree[v]; i++){
         if(used[adj[v][i]] == 0){
             delete_vertex(used[adj[v][i]], 1);
             j++;
@@ -114,9 +137,9 @@ bool vc_branch(int k, int stack_checkpoint){
 }
 
 int main(int argc, char **argv){
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     ////parse input and initialize everything
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     char* line = NULL;
     size_t len = 0;
     getline(&line, &len, stdin);
@@ -189,9 +212,9 @@ int main(int argc, char **argv){
     for(int i = 0; i < vertices; i++){
         add_to_degree_list(i);
     }
-    //////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     ////Calculating Solution here
-    //////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     //TODO: simple upper lower bound
     int k = calc_lower_bound();
     int upper_bound = calc_upper_bound();
@@ -200,9 +223,9 @@ int main(int argc, char **argv){
         k++;
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     ////print Solution
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     for(int i = 0; i < vertices; i++){
         if(used[i] == 1){
             printf("%d\n", i +1);

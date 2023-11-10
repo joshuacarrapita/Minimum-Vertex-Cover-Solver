@@ -64,11 +64,11 @@ int *degree_list;
 int *degree_list_prev, *degree_list_next; 
 
 /*
- * stack of commands we executed to be able to reverse the graph to a previous
- * condition, can be at most total_amt_vertices long as our only "commands" are
- * vertex deletion commands
+ * stack of deletions we executed to be able to reverse the graph to a previous
+ * condition, can be at most total_amt_vertices long as we can't delete more
+ * vertices than that
  */
-int *command_stack;
+int *deletion_stack;
 int stack_top = -1; // index of the "topmost" / "most recently added" stack entry
 
 int calc_lower_bound(){
@@ -86,7 +86,7 @@ void data_reduction(){
 }
 
 /*
- * INFO: add a vertex to it's corresponding degree list
+ * INFO: add a vertex to it's corresponding degree list and update maxmimum_degree
  *
  * EXAMPLE: adds vertex x to degree list i if it is of degree i
  */
@@ -113,6 +113,11 @@ void add_to_degree_list(unsigned int vertex) {
         degree_list_next[vertex] = first; 
         degree_list_prev[vertex] = -1; // our "vertex" has no predecessor anymore
     }
+
+	// update maxmimum_degree
+	if (degree[vertex] > maximum_degree) {
+                maximum_degree = degree[vertex];
+	}
 }
 
 void remove_from_degree_list(unsigned int vertex){
@@ -138,7 +143,7 @@ void remove_from_degree_list(unsigned int vertex){
 
 void delete_vertex(int vertex, bool put_in_vc){
 	stack_top++;
-	command_stack[stack_top] = vertex;
+	deletion_stack[stack_top] = vertex;
 
 	if (put_in_vc) { 
 		used[vertex] = 2; // Vertex gets deleted and put in vertex cover
@@ -162,26 +167,47 @@ void delete_vertex(int vertex, bool put_in_vc){
     }
 }
 
-void reverse_commands(int stack_checkpoint){
-    while (stack_top > stack_checkpoint) {
-        unsigned int v = command_stack[stack_top];
-        used[v] = 0;
-        add_to_degree_list(v);
-        if (degree[v] > maximum_degree) {
-            maximum_degree = degree[v];
-        }
-        for (int i = 0, j = 0; j < degree[v];i++) {
+void reverse_deletion(int stack_checkpoint){
+	// as long as we didn't revert back to the desired state
+    while (stack_top > stack_checkpoint) { 
+		// get the most recently deleted vertex
+        unsigned int v = deletion_stack[stack_top];
+        used[v] = 0; // set its status to "untouched"
+        add_to_degree_list(v); // add it to its corresponding degree list
+        /*
+		 * !! I refactored this into add_to_degree_list, there is a todo for it
+		 * // if v has the highest degree now
+		 * if (degree[v] > maximum_degree) {
+            maximum_degree = degree[v]; // we update that
+         }*/
+
+		/*
+		 * update degrees and degreelists for all of v's "active" neighbours"
+		 * 
+		 * this should only need to be done for the "active" ones, as the other
+		 * ones are deleted anyways and come higher up in the deletion_stack
+		 * wherefore when they become available again, their neighbourhood will
+		 * already be converted back to the condition it had when the vertex was
+		 * deleted and added to the deletion stack
+		 */
+        for (int i = 0, j = 0; j < degree[v]; i++) {
             unsigned int w = adj[v][i];
             if (used[w] == 0) {
-                remove_from_degree_list(w);
+				// remove them from their current degree list
+                remove_from_degree_list(w); 
+				// update their degree as they are now connected to v too
                 degree[w]++;
+				// and add them to the new correct degree list
                 add_to_degree_list(w);
                 j++;
+				/*
+		 		 * !! I refactored this into add_to_degree_list, there is a todo for it
                 if (degree[w] > maximum_degree) {
                     maximum_degree = degree[w];
-                }
+                }*/
             }
         }
+
         stack_checkpoint--;
     }
 }
@@ -208,7 +234,7 @@ bool vc_branch(int k, int stack_checkpoint){
 
 	// else we are still here, didn't find one with our pick of v and need to 
 	// revert the deletion of v
-    reverse_commands(stack_checkpoint);
+    reverse_deletion(stack_checkpoint);
 
 	/* 
 	 * and then we delete its whole remaining neighbourhood from the graph and
@@ -275,8 +301,8 @@ int main(int argc, char **argv){
     degree_list_next = degree_list_next_;
     degree_list_prev = degree_list_prev_;
 
-    int command_stack_[total_amt_vertices]; 
-    command_stack = command_stack_;
+    int deletion_stack_[total_amt_vertices]; 
+    deletion_stack = deletion_stack_;
 
 	/*
 	 * initialisation of arrays contents with standard data where we can and
@@ -314,13 +340,22 @@ int main(int argc, char **argv){
             adj[w] = realloc(adj[w], sizeof(int) * degree[w]);
             adj[w][degree[w] - 1] = v;
 
+			/*
+			 * TODO: I reallocated the maximum_degree update into add_to_degree_list
+			 * which should still work as the maxmimum_degree will be updated
+			 * upon building of the degree list a few lines below but please
+			 * check if you think this makes sense
+			 *
+			 * it also simplifies things in reverse_deletion where you need
+			 * to delete commented out code too if this reallocation is fine
+			 */
 			// update maximum_degree if necessary
-            if (degree[v] > maximum_degree) {
+            /*if (degree[v] > maximum_degree) {
                 maximum_degree = degree[v];
 			}
             if (degree[w] > maximum_degree) {
                 maximum_degree = degree[w];
-            }
+            }*/
 
             counter_edges++;
         }
@@ -343,7 +378,7 @@ int main(int argc, char **argv){
 	// as long as we dont find a vertex cover of size k and upper bound isn't
 	// reached increase k and keep trying
     while (!vc_branch(k, -1) && k < upper_bound) {
-        reverse_commands(-1); // revert commands executed in prev. vc_branch call
+        reverse_deletion(-1); // revert commands executed in prev. vc_branch call
         k++;
     }
 

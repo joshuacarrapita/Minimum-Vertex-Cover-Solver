@@ -188,28 +188,54 @@ void reverse_commands(int stack_checkpoint){
 
 bool vc_branch(int k, int stack_checkpoint){
     //TODO: reduce data
-    if (k < 0) {//no solution is found
+    if (k < 0) { // Recursion hook, no vertex cover was found
         return false;
     }
-    if (maximum_degree <= 0) { //
+	// No edges in current vertex induced subgraph therefore we have a vertex
+	// cover of size 0 for this subgraph
+    if (maximum_degree <= 0) { 
         return true;
     }
-    unsigned int v = degree_list[maximum_degree];
-    delete_vertex(v, 1);
+	
+	// pick a vertex of maximum degree (this is an attempt at an heuristic)
+    unsigned int v = degree_list[maximum_degree]; 
+	// delete it from the graph and add it to the vertex cover
+    delete_vertex(v, 1); 
+	// if we find a vertex cover of size k-1 in the remaining subgraph
     if (vc_branch(k - 1, stack_top)) {
-        return true;
+        return true; // it makes a vertex cover of size k with our deleted one
     }
+
+	// else we are still here, didn't find one with our pick of v and need to 
+	// revert the deletion of v
     reverse_commands(stack_checkpoint);
+
+	/* 
+	 * and then we delete its whole remaining neighbourhood from the graph and
+	 * add it to the vertex cover
+	 *
+	 * ! note the usage of i and j here: i iterates over all neighbours of v 
+	 * but the iteration stops as soon as all still "active" neighbours have 
+	 * been deleted which is handled by j and the degree[v]
+	 */ 
     for (int i = 0, j = 0; j < degree[v]; i++) {
-        if (used[adj[v][i]] == 0) {
-            delete_vertex(used[adj[v][i]], 1);
+		unsigned int w = adj[v][i];
+        if (used[w] == 0) {
+            delete_vertex(w, 1);
             j++;
         }
     }
+
+	/*
+	 * if we find a vertex cover of now size k - degree[v] (the amount of just
+	 * deleted vertices) in the remaining subgraph
+	 */ 
     if (vc_branch(k - degree[v], stack_top)) {
-        return true;
+        return true; // it makes a vertex cover of size k with our deleted ones
     }
-    return false;
+
+	// else we were out of luck with vertex covers for size k in this subgraph
+    return false; 
 }
 
 int main(int argc, char **argv){
@@ -314,8 +340,10 @@ int main(int argc, char **argv){
     //TODO: simple upper lower bound
     int k = calc_lower_bound();
     int upper_bound = calc_upper_bound();
+	// as long as we dont find a vertex cover of size k and upper bound isn't
+	// reached increase k and keep trying
     while (!vc_branch(k, -1) && k < upper_bound) {
-        reverse_commands(-1);//set back to init
+        reverse_commands(-1); // revert commands executed in prev. vc_branch call
         k++;
     }
 
@@ -324,8 +352,9 @@ int main(int argc, char **argv){
     //////////////////////////////////////////////////////////////////////////
     for (int i = 0; i < total_amt_vertices; i++) {
         if (used[i] == 1) {
-            printf("%d\n", i +1);
+            printf("%d\n", i+1);
         }
     }
+
     return 0;
 }

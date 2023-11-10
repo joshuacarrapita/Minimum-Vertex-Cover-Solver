@@ -40,7 +40,7 @@ void add_to_degree_list(unsigned int vertex){
     }else{
         unsigned int first = degree_list[current_degree];
         degree_list[current_degree] = vertex;
-        degree_list_prev[first] = vertex;
+        if(first > -1){degree_list_prev[first] = vertex;}
         degree_list_next[vertex] = first;
         degree_list_prev[vertex] = -1;
     }
@@ -71,8 +71,8 @@ void delete_vertex(int vertex, bool put_in_vc){
 
 	remove_from_degree_list(vertex);
 
-	for(int i = 0, j = 0; j < degree[v];i++){
-		int neighbour = used[adj[v][i]];
+	for(int i = 0, j = 0; j < degree[vertex];i++){
+		int neighbour = adj[vertex][i];
         if(used[neighbour] == 0){
 			remove_from_degree_list(neighbour);
 			if(degree[neighbour] == maximum_degree && degree_list[maximum_degree] == -1){
@@ -83,7 +83,6 @@ void delete_vertex(int vertex, bool put_in_vc){
             j++;
         }
     }
-
 }
 
 void reverse_commands(int stack_checkpoint){
@@ -209,6 +208,7 @@ int main(int argc, char **argv){
     //initialize degree_list
     int degree_list_[maximum_degree + 1];//+1 because we have vertices with 0 adj
     degree_list = degree_list_;
+    for(int i = 0; i <= maximum_degree; i++) {degree_list[i] = -1;}
     for(int i = 0; i < vertices; i++){
         add_to_degree_list(i);
     }

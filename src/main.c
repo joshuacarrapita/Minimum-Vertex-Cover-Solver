@@ -6,55 +6,132 @@
 #include <stdlib.h>
 #include <string.h>
 
-unsigned int vertices; //number of vertices
-unsigned int edges; //number of edges
+unsigned int total_amt_vertices; // number of vertices in the graph
+unsigned int total_amt_edges; // number of edges in the graph
 
-int **adj; //adjacency list for each vertex, not to be altered
+/*
+ * INFO: a list that contains pointers to each vertex' adjacency list
+ * 
+ * EXAMPLE: adj[i] contains the int* that points to the adjacency list of
+ * vertex i
+ *
+ * MODIFICATION: content not to be altered after initialisation
+ */
+int **adj; 
 
-char *used; //is vertex used in vertex cover (2), is it deleted(1) or untouched(0)
-unsigned int *degree; //array of the degree of each vertex, this is altered
+/*
+ * INFO: an array that holds information for each vertex whether it is:
+ * deleted and used in vertex cover (2), just deleted(1), or untouched(0)
+ *
+ * EXAMPLE: used[i] is set to 0/1/2 according to the rules just mentioned if 
+ * vertex i is of status (0), (1), or (2)
+ *
+ * MODIFICATION: content can be altered after initalisation
+ */
+char *used; 
 
-int *degree_list; //start of list for each degree
-int *degree_list_prev, *degree_list_next; //prev and next counter in degree_list, simulated as ints, not real pointer
-int maximum_degree;
+/*
+ * INFO: an array that holds the degree of each vertex (as unsigned int)
+ *
+ * EXAMPLE: degree[i] is set to x if vertex i has degree x, means x "undeleted"
+ * neighbours
+ *
+ * MODIFICATION: content can be altered after initialisation
+ */
+unsigned int *degree; 
 
-int *command_stack; //stack of command
-int stack_top = -1; //current size of stack i.e. where the last new entry of stack is
+int maximum_degree; // Holds the value for the highest degree found in the graph
+/*
+ * INFO: an array of size maximum_degree that holds the index of the first
+ * vertex that represents a degree
+ *
+ * EXAMPLE: degree_list[i] holds value x if vertex x is the first in the list of
+ * all vertices of degree i, "the list" is constructed through the arrays
+ * 'degree_list_prev' and 'degree_list_next'
+ *
+ * MODIFICATION: content can be altered after initialisation
+ */
+int *degree_list; 
+/*
+ * INFO: arrays of size total_amt_vertices that hold the following and previous 
+ * vertices in the list of vertices of degree d
+ *
+ * EXAMPLE: degree_list_next[i] holds value x if vertex x is the following vertex
+ * to vertex i in the degree_list that corresponds to vertex i's degree
+ *
+ * MODIFICATION: content can be altered after initialisation
+ */
+int *degree_list_prev, *degree_list_next; 
+
+/*
+ * stack of commands we executed to be able to reverse the graph to a previous
+ * condition, can be at most total_amt_vertices long as our only "commands" are
+ * vertex deletion commands
+ */
+int *command_stack;
+int stack_top = -1; // index of the "topmost" / "most recently added" stack entry
 
 int calc_lower_bound(){
-    return 0; //TODO: calculate lower bound
+	//TODO: calculate lower bound
+    return 0; 
+}
+
+int calc_upper_bound(){
+	//TODO: calculate upper bound
+    return total_amt_vertices; 
 }
 
 void data_reduction(){
     //TODO: reduce data :-)
 }
 
-int calc_upper_bound(){
-    return vertices; //TODO: calculate upper bound
-}
-
-void add_to_degree_list(unsigned int vertex){
+/*
+ * INFO: add a vertex to it's corresponding degree list
+ *
+ * EXAMPLE: adds vertex x to degree list i if it is of degree i
+ */
+void add_to_degree_list(unsigned int vertex) {
     unsigned int current_degree = degree[vertex];
-    if (degree_list[current_degree] == -1){
-        degree_list[current_degree] = vertex;
-    }else{
-        unsigned int first = degree_list[current_degree];
-        degree_list[current_degree] = vertex;
-        if(first > -1){degree_list_prev[first] = vertex;}
-        degree_list_next[vertex] = first;
-        degree_list_prev[vertex] = -1;
+	// if there is no first element in the corresponding degree list
+    if (degree_list[current_degree] == -1) { 
+        degree_list[current_degree] = vertex; // our "vertex" becomes the first
+    } else {
+        unsigned int first = degree_list[current_degree]; // retrieve the first element
+        degree_list[current_degree] = vertex; // put our "vertex" in the first place
+        /*
+		 * TODO: check if this if statement is even needed: 
+		 * if(first > -1){degree_list_prev[first] = vertex;}
+		 * 
+		 * i dont think so because we should already be in the case for > -1 if
+		 * everything is correctly initialised and therefore replaced it with 
+		 * the following statement:
+		 */ 
+		// set our "vertex" as the predecessor for the previously first element
+        degree_list_prev[first] = vertex; 
+		// set the previously first element to be our "vertex" sucessor in the
+		// degree list
+        degree_list_next[vertex] = first; 
+        degree_list_prev[vertex] = -1; // our "vertex" has no predecessor anymore
     }
 }
 
 void remove_from_degree_list(unsigned int vertex){
     unsigned int current_degree = degree[vertex];
-    if(degree_list[current_degree] == vertex){
-        degree_list[current_degree] = degree_list_next[vertex];
+	// if our vertex coincidentally is the first in its corresponding degree list
+    if (degree_list[current_degree] == vertex) {
+		// the next one in the list becomes the new first element
+        degree_list[current_degree] = degree_list_next[vertex]; 
     }
     int next = degree_list_next[vertex];
     int prev = degree_list_prev[vertex];
-    if(next != -1){degree_list_prev[next] = prev;}
-    if(prev != -1){degree_list_next[prev] = next;}
+	// if there was a sucessor to our vertex in the degree list, let its predecessor
+	// be the predecessor of our vertex
+    if (next != -1) degree_list_prev[next] = prev;
+	// if there was a predecessor to our vertex in the degree list, let its
+	// sucessor be the sucessor of our vertex
+    if (prev != -1) degree_list_next[prev] = next;
+	// our vertex has no predecessor or successor anymore for now as it's currently
+	// not in any degree_list anymore, they will be added again in add_to_degree_list
     degree_list_next[vertex] = -1;
     degree_list_prev[vertex] = -1;
 }
@@ -63,7 +140,7 @@ void delete_vertex(int vertex, bool put_in_vc){
 	stack_top++;
 	command_stack[stack_top] = vertex;
 
-	if(put_in_vc) { 
+	if (put_in_vc) { 
 		used[vertex] = 2; // Vertex gets deleted and put in vertex cover
 	} else {
 		used[vertex] = 1; // Vertex gets deleted but not put in vertex cover
@@ -71,11 +148,11 @@ void delete_vertex(int vertex, bool put_in_vc){
 
 	remove_from_degree_list(vertex);
 
-	for(int i = 0, j = 0; j < degree[vertex];i++){
+	for (int i = 0, j = 0; j < degree[vertex];i++) {
 		int neighbour = adj[vertex][i];
-        if(used[neighbour] == 0){
+        if (used[neighbour] == 0) {
 			remove_from_degree_list(neighbour);
-			if(degree[neighbour] == maximum_degree && degree_list[maximum_degree] == -1){
+			if (degree[neighbour] == maximum_degree && degree_list[maximum_degree] == -1) {
 				maximum_degree--;
 			}
 			degree[neighbour]--;
@@ -86,21 +163,21 @@ void delete_vertex(int vertex, bool put_in_vc){
 }
 
 void reverse_commands(int stack_checkpoint){
-    while(stack_top > stack_checkpoint){
+    while (stack_top > stack_checkpoint) {
         unsigned int v = command_stack[stack_top];
         used[v] = 0;
         add_to_degree_list(v);
-        if(degree[v] > maximum_degree){
+        if (degree[v] > maximum_degree) {
             maximum_degree = degree[v];
         }
-        for(int i = 0, j = 0; j < degree[v];i++){
+        for (int i = 0, j = 0; j < degree[v];i++) {
             unsigned int w = adj[v][i];
-            if(used[w] == 0){
+            if (used[w] == 0) {
                 remove_from_degree_list(w);
                 degree[w]++;
                 add_to_degree_list(w);
                 j++;
-                if(degree[w] > maximum_degree){
+                if (degree[w] > maximum_degree) {
                     maximum_degree = degree[w];
                 }
             }
@@ -111,25 +188,25 @@ void reverse_commands(int stack_checkpoint){
 
 bool vc_branch(int k, int stack_checkpoint){
     //TODO: reduce data
-    if(k < 0){//no solution is found
+    if (k < 0) {//no solution is found
         return false;
     }
-    if(maximum_degree <= 0){ //
+    if (maximum_degree <= 0) { //
         return true;
     }
     unsigned int v = degree_list[maximum_degree];
     delete_vertex(v, 1);
-    if(vc_branch(k - 1, stack_top)){
+    if (vc_branch(k - 1, stack_top)) {
         return true;
     }
     reverse_commands(stack_checkpoint);
-    for(int i = 0, j = 0; j < degree[v]; i++){
-        if(used[adj[v][i]] == 0){
+    for (int i = 0, j = 0; j < degree[v]; i++) {
+        if (used[adj[v][i]] == 0) {
             delete_vertex(used[adj[v][i]], 1);
             j++;
         }
     }
-    if(vc_branch(k - degree[v], stack_top)){
+    if (vc_branch(k - degree[v], stack_top)) {
         return true;
     }
     return false;
@@ -137,97 +214,116 @@ bool vc_branch(int k, int stack_checkpoint){
 
 int main(int argc, char **argv){
     //////////////////////////////////////////////////////////////////////////
-    ////parse input and initialize everything
+    //// parse input and initialize everything
     //////////////////////////////////////////////////////////////////////////
     char* line = NULL;
     size_t len = 0;
     getline(&line, &len, stdin);
 
-    while (line[0] == '#'){ getline(&line, &len, stdin);}					// ignore comment lines
+    while (line[0] == '#') getline(&line, &len, stdin); // ignore comment lines
 
-    //init edge and vertex size in first line
+    // init edge and vertex count
     char *ptr = strtok(line, " ");
-    vertices = strtol(ptr, (char**) NULL, 10);
+    total_amt_vertices = strtol(ptr, (char**) NULL, 10);
     ptr = strtok(NULL, " ");
-    edges = strtol(ptr, (char**) NULL, 10);
+    total_amt_edges = strtol(ptr, (char**) NULL, 10);
 
-    //init all arrays
-    int *adj_[vertices];
+	/*
+   	 * init all arrays and their pointers (we use static arrays so that they 
+	 * will be allocated in proximity to each other in memory and also because 
+	 * we can and dont have have to worry about freeing memory, we still use 
+	 * global pointers so we can easily reference the arrays contents from 
+	 * within functions)
+	 */
+    int *adj_[total_amt_vertices];
     adj = adj_;
 
-    char used_[vertices];
+    char used_[total_amt_vertices];
     used = used_;
 
-    unsigned int degree_[vertices];
+    unsigned int degree_[total_amt_vertices];
     degree = degree_;
 
-    int degree_list_next_[vertices], degree_list_prev_[vertices];
+    int degree_list_next_[total_amt_vertices];
+	int degree_list_prev_[total_amt_vertices];
     degree_list_next = degree_list_next_;
     degree_list_prev = degree_list_prev_;
 
-    int command_stack_[vertices +1];//+1 because when
+    int command_stack_[total_amt_vertices]; 
     command_stack = command_stack_;
 
-    for (int i = 0; i < vertices; i++){
-        adj[i] = NULL; // FREE LATER
-        used[i] = 0;
-        degree[i] = 0;
-        degree_list_prev[i] = -1;// -1 is equivalent to NULL in this case
-        degree_list_next[i] = -1;
+	/*
+	 * initialisation of arrays contents with standard data where we can and
+	 * need to
+ 	 */
+    for (int i = 0; i < total_amt_vertices; i++) {
+        adj[i] = NULL; // we didn't save any adjacent vertices yet
+        used[i] = 0; // all vertices are untouched
+        degree[i] = 0; // we initialise degrees for all vertices as 0
+    	maximum_degree = 0; // we initialise the maximum degree as 0
+        degree_list_prev[i] = -1; // -1 symbolises NULL in this case means no 
+        degree_list_next[i] = -1; // vertex has a previous or following one in 
+								  // his degree_list yet
     }
 
+	// parse edges to update vertex degrees and fill their adjacency lists
     int counter_edges = 0;
-    maximum_degree = 0;
-    while(counter_edges < edges) {
+    while (counter_edges < total_amt_edges) {
         getline(&line, &len, stdin);
-        if (line[0] != '#') {
-            //get vertices of edge
+        if (line[0] != '#') { // skip comments
+							  
+            // get vertices v and w of edge
             ptr = strtok(line, " ");
             unsigned int v = (unsigned int) strtol(ptr, (char **) NULL, 10) - 1;
             ptr = strtok(NULL, " ");
             unsigned int w = (unsigned int) strtol(ptr, (char **) NULL, 10) - 1;
-            //increase degree for both
+
+            // increase degree for both
             degree[v]++;
             degree[w]++;
-            //add to adj[vertex] for both
+
+            // add to each others adjacency lists
             adj[v] = realloc(adj[v], sizeof(int) * degree[v]);
             adj[v][degree[v] - 1] = w;
             adj[w] = realloc(adj[w], sizeof(int) * degree[w]);
             adj[w][degree[w] - 1] = v;
 
-
-            if(degree[v] > maximum_degree && degree[v] > degree[w]){
+			// update maximum_degree if necessary
+            if (degree[v] > maximum_degree) {
                 maximum_degree = degree[v];
-            }else if(degree[w] > maximum_degree){
+			}
+            if (degree[w] > maximum_degree) {
                 maximum_degree = degree[w];
             }
 
             counter_edges++;
         }
     }
-    //initialize degree_list
-    int degree_list_[maximum_degree + 1];//+1 because we have vertices with 0 adj
+
+    // initialize degree_list array and its pointer
+    int degree_list_[maximum_degree + 1]; // +1 because we have vertices with 0 adj
     degree_list = degree_list_;
-    for(int i = 0; i <= maximum_degree; i++) {degree_list[i] = -1;}
-    for(int i = 0; i < vertices; i++){
-        add_to_degree_list(i);
-    }
+	// set first elements of all degree lists to -1 (symbolises NULL)
+    for (int i = 0; i <= maximum_degree; i++) degree_list[i] = -1;
+	// add each vertex to its corresponding degree list
+    for (int i = 0; i < total_amt_vertices; i++) add_to_degree_list(i);
+
     //////////////////////////////////////////////////////////////////////////
-    ////Calculating Solution here
+    //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
     //TODO: simple upper lower bound
     int k = calc_lower_bound();
     int upper_bound = calc_upper_bound();
-    while(!vc_branch(k, -1) && k < upper_bound){
+    while (!vc_branch(k, -1) && k < upper_bound) {
         reverse_commands(-1);//set back to init
         k++;
     }
 
     //////////////////////////////////////////////////////////////////////////
-    ////print Solution
+    //// print solution
     //////////////////////////////////////////////////////////////////////////
-    for(int i = 0; i < vertices; i++){
-        if(used[i] == 1){
+    for (int i = 0; i < total_amt_vertices; i++) {
+        if (used[i] == 1) {
             printf("%d\n", i +1);
         }
     }

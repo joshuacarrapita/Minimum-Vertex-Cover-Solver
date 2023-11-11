@@ -352,6 +352,7 @@ int main(int argc, char **argv){
     for (int i = 0; i < total_amt_vertices; i++) {
         adj[i] = NULL; // we didn't save any adjacent vertices yet
         used[i] = 0; // all vertices are untouched
+		deletion_stack[i] = -1; // not necessary but makes debugging easier
         degree[i] = 0; // we initialise degrees for all vertices as 0
         degree_list_prev[i] = -1; // -1 symbolises NULL in this case means no 
         degree_list_next[i] = -1; // vertex has a previous or following one in 

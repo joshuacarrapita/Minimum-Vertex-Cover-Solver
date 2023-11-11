@@ -34,13 +34,22 @@ int stack_top = -1; // index of the "topmost" / "most recently added" stack entr
 unsigned int calc_lower_bound(){
 	//TODO: calculate lower bound
     unsigned int result = 0;
-    if(maximum_degree > 0 ) result = total_amt_vertices/maximum_degree;
+    if( maximum_degree > 0 ) { // don't divide by 0
+		result = total_amt_edges/maximum_degree;
+	}
     return result;
 }
 
 unsigned int calc_upper_bound(){
 	//TODO: calculate upper bound
-    return total_amt_vertices;
+	unsigned int upper_bound = 0;
+	if (maximum_degree == 0) {
+		return upper_bound;
+	}
+	unsigned int v = degree_list[maximum_degree]; 
+	delete_vertex(v,1);
+	upper_bound = 1 + calc_upper_bound();
+    return upper_bound;
 }
 
 
@@ -105,7 +114,7 @@ void delete_vertex(unsigned int v, bool put_in_vc){
 	// we only want "active" vertices in the degree lists
 	remove_from_degree_list(v);
     //check if v was max_degree
-    if(vertex[v].degree == maximum_degree && degree_list[maximum_degree] == -1){
+    if(maximum_degree > 0 && vertex[v].degree == maximum_degree && degree_list[maximum_degree] == -1){
         //find new max degree
         while(degree_list[maximum_degree] == -1){
             maximum_degree--;
@@ -176,15 +185,17 @@ void reverse_deletion(int stack_checkpoint){
 unsigned int data_reduction() {
     //TODO: more reduction rules
     unsigned int k = 0;
+
     //degree 1 rule
-    if(maximum_degree == 0){
-        return 0;
+    if(maximum_degree == 0){ // In case there is only a degree 0 list
+		return 0;
     }
     while (degree_list[1] != -1) {
         unsigned int v = degree_list[1];
         for (int i = 0, j = 0; j < 1; i++) {
             int w = vertex[v].adj[i];
             if (vertex[w].used == 0) {
+				total_amt_edges -= vertex[w].degree;
                 delete_vertex(v, 0);
                 delete_vertex(w, 1);
                 j++;
@@ -285,7 +296,7 @@ int main(int argc, char **argv){
 	int degree_list_prev_[total_amt_vertices];
     degree_list_next = degree_list_next_;
     degree_list_prev = degree_list_prev_;
-*/
+	*/
     //int deletion_stack_[total_amt_vertices];
     deletion_stack = malloc(total_amt_vertices * sizeof(int));
 
@@ -350,18 +361,24 @@ int main(int argc, char **argv){
     //////////////////////////////////////////////////////////////////////////
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
-
+	data_reduction();
+    stack_top = -1;//first reduction is never reversed
+				   
     unsigned int lower_bound = calc_lower_bound();
     unsigned int upper_bound = calc_upper_bound();
 
-    int k = data_reduction();
-    stack_top = -1;//first reduction is never reversed
-    if(lower_bound > k) k = lower_bound;
-    //search for lowest vertex_cover of size k
-    while (!vc_branch(k, -1) && k < upper_bound) {
-        reverse_deletion(-1); // revert commands executed in prev. vc_branch call
-        k++;
-    }
+	if (lower_bound < upper_bound) { 
+		reverse_deletion(-1);
+		//search for lowest vertex_cover of size k
+		while (!vc_branch(lower_bound, -1)) {
+			if ( lower_bound < upper_bound) {
+			reverse_deletion(-1); // revert commands executed in prev. vc_branch call
+			lower_bound++;
+			} else {
+				return 0;
+			}
+		}
+	}
 
     //////////////////////////////////////////////////////////////////////////
     //// print solution

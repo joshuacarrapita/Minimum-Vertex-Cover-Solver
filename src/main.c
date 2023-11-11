@@ -1,6 +1,3 @@
-//
-// Created by levent on 11/9/23.
-//
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -120,6 +117,13 @@ void add_to_degree_list(unsigned int vertex) {
 	}
 }
 
+/*
+ * INFO: remove a vertex from its degree list (used when it needs to be put
+ * into a different degree list for example) and link its predecessor and successor
+ * in that list to each other if they exist
+ *
+ * EXAMPLE: removes vertex v from degree_list[x] if v was of degree x
+ */
 void remove_from_degree_list(unsigned int vertex){
     unsigned int current_degree = degree[vertex];
 	// if our vertex coincidentally is the first in its corresponding degree list
@@ -141,32 +145,59 @@ void remove_from_degree_list(unsigned int vertex){
     degree_list_prev[vertex] = -1;
 }
 
+/*
+ * INFO: mark a vertex as "deleted and used in vertex_cover" or "just deleted",
+ * put it on the deletion_stack, 
+ * remove it from its degree list,
+ * update the degrees and degree lists of all its neighbours, 
+ * reduce maximum_degree if a neighbour was the only one with that degree
+ */
 void delete_vertex(int vertex, bool put_in_vc){
+	// add vertex to deletion stack
 	stack_top++;
 	deletion_stack[stack_top] = vertex;
 
+	// update used status
 	if (put_in_vc) { 
-		used[vertex] = 2; // Vertex gets deleted and put in vertex cover
+		used[vertex] = 2; // vertex gets deleted and put in vertex cover
 	} else {
-		used[vertex] = 1; // Vertex gets deleted but not put in vertex cover
+		used[vertex] = 1; // vertex gets deleted but not put in vertex cover
 	}
 
+	// we only want "active" vertices in the degree lists
 	remove_from_degree_list(vertex);
 
-	for (int i = 0, j = 0; j < degree[vertex];i++) {
-		int neighbour = adj[vertex][i];
-        if (used[neighbour] == 0) {
-			remove_from_degree_list(neighbour);
-			if (degree[neighbour] == maximum_degree && degree_list[maximum_degree] == -1) {
+	/*
+	 * remove all "active" neighbours of vertex from their degree lists, update their 
+	 * degrees and add them back to the new correct list
+	 */
+	for (int i = 0, j = 0; j < degree[vertex]; i++) {
+		int w = adj[vertex][i];
+        if (used[w] == 0) {
+			remove_from_degree_list(w);
+
+			/*
+			 * if neighbour w was the only vertex of maximum_degree we need to 
+			 * decrease maximum_degree now as w's degree is decreased due to 
+			 * vertex's deletion
+			 */
+			if (degree[w] == maximum_degree && degree_list[maximum_degree] == -1) {
 				maximum_degree--;
 			}
-			degree[neighbour]--;
-			add_to_degree_list(neighbour);
+			degree[w]--;
+
+			add_to_degree_list(w);
             j++;
         }
     }
 }
 
+/*
+ * INFO: mark a vertex as "untouched"
+ * remove it from the deletion_stack, 
+ * add it to its corresponding degree list,
+ * update the degrees and degree lists of all its neighbours, 
+ */
 void reverse_deletion(int stack_checkpoint){
 	// as long as we didn't revert back to the desired state
     while (stack_top > stack_checkpoint) { 
@@ -212,6 +243,9 @@ void reverse_deletion(int stack_checkpoint){
     }
 }
 
+/*
+ * INFO: Implement the main vc_branch algorithm as shown in the lecture slides
+ */
 bool vc_branch(int k, int stack_checkpoint){
     //TODO: reduce data
     if (k < 0) { // Recursion hook, no vertex cover was found
@@ -226,7 +260,7 @@ bool vc_branch(int k, int stack_checkpoint){
 	// pick a vertex of maximum degree (this is an attempt at an heuristic)
     unsigned int v = degree_list[maximum_degree]; 
 	// delete it from the graph and add it to the vertex cover
-    delete_vertex(v, 1); 
+    delete_vertex(v, 2); 
 	// if we find a vertex cover of size k-1 in the remaining subgraph
     if (vc_branch(k - 1, stack_top)) {
         return true; // it makes a vertex cover of size k with our deleted one
@@ -247,7 +281,7 @@ bool vc_branch(int k, int stack_checkpoint){
     for (int i = 0, j = 0; j < degree[v]; i++) {
 		unsigned int w = adj[v][i];
         if (used[w] == 0) {
-            delete_vertex(w, 1);
+            delete_vertex(w, 2);
             j++;
         }
     }
@@ -264,6 +298,9 @@ bool vc_branch(int k, int stack_checkpoint){
     return false; 
 }
 
+/*
+ * INFO: Parse input and initialize everything, calculate solution, print solution
+ */
 int main(int argc, char **argv){
     //////////////////////////////////////////////////////////////////////////
     //// parse input and initialize everything
@@ -386,7 +423,7 @@ int main(int argc, char **argv){
     //// print solution
     //////////////////////////////////////////////////////////////////////////
     for (int i = 0; i < total_amt_vertices; i++) {
-        if (used[i] == 1) {
+        if (used[i] == 2) {
             printf("%d\n", i+1);
         }
     }

@@ -6,9 +6,9 @@
 
 unsigned int total_amt_vertices; // number of vertices in the graph
 unsigned int total_amt_edges; // number of edges in the graph
-
-
 Vertex *vertex;
+
+void delete_vertex(unsigned int v, bool put_in_vc);
 
 int maximum_degree; // Holds the value for the highest degree found in the graph
 /*
@@ -34,7 +34,7 @@ int stack_top = -1; // index of the "topmost" / "most recently added" stack entr
 unsigned int calc_lower_bound(){
 	//TODO: calculate lower bound
     unsigned int result = 0;
-    if( maximum_degree > 0 ) { // don't divide by 0
+    if (maximum_degree > 0) { // don't divide by 0
 		result = total_amt_edges/maximum_degree;
 	}
     return result;
@@ -184,12 +184,12 @@ void reverse_deletion(int stack_checkpoint){
 
 unsigned int data_reduction() {
     //TODO: more reduction rules
-    unsigned int k = 0;
 
     //degree 1 rule
-    if(maximum_degree == 0){ // In case there is only a degree 0 list
+    if (maximum_degree == 0) { // In case there is only a degree 0 list
 		return 0;
     }
+    unsigned int k = 0;
     while (degree_list[1] != -1) {
         unsigned int v = degree_list[1];
         for (int i = 0, j = 0; j < 1; i++) {
@@ -221,13 +221,14 @@ bool vc_branch(int k, int stack_checkpoint){
 	// pick a vertex of maximum degree (this is an attempt at an heuristic)
 
     unsigned int v = degree_list[maximum_degree]; 
+    int old_stack_top = stack_top;
 	delete_vertex(v, 1);
 	if (vc_branch(k - 1, stack_top)) {
         return true; // it makes a vertex cover of size k with our deleted one
     }
 
 	//no solution of size k with v
-    reverse_deletion(stack_checkpoint);
+    reverse_deletion(old_stack_top);
     int degree_v = vertex[v].degree;//need the current degree, because after deleting the neighborhood deg[v] = 0
 	/* 
 	 * delete neighbors and add to vc
@@ -349,8 +350,9 @@ int main(int argc, char **argv){
     }
 
     // initialize degree_list array and its pointer
-    int degree_list_[maximum_degree + 1]; // +1 because we have vertices with 0 adj
-    degree_list = degree_list_;
+    //int degree_list_[maximum_degree + 1]; // +1 because we have vertices with 0 adj
+    // malloc is safer!
+    degree_list = malloc(sizeof(Vertex) * (maximum_degree + 1));
 	// set first elements of all degree lists to -1 (symbolises NULL)
     for (int i = 0; i <= maximum_degree; i++) degree_list[i] = -1;
 	// add each vertex to its corresponding degree list
@@ -371,7 +373,7 @@ int main(int argc, char **argv){
 		reverse_deletion(-1);
 		//search for lowest vertex_cover of size k
 		while (!vc_branch(lower_bound, -1)) {
-			if ( lower_bound < upper_bound) {
+			if (lower_bound < upper_bound) {
 			reverse_deletion(-1); // revert commands executed in prev. vc_branch call
 			lower_bound++;
 			} else {

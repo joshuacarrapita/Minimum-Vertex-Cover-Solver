@@ -68,19 +68,18 @@ int *degree_list_prev, *degree_list_next;
 int *deletion_stack;
 int stack_top = -1; // index of the "topmost" / "most recently added" stack entry
 
-int calc_lower_bound(){
+unsigned int calc_lower_bound(){
 	//TODO: calculate lower bound
-    return 0; 
+    unsigned int result = 0;
+    if(maximum_degree > 0 ) total_amt_vertices/maximum_degree;
+    return result;
 }
 
-int calc_upper_bound(){
+unsigned int calc_upper_bound(){
 	//TODO: calculate upper bound
-    return total_amt_vertices; 
+    return total_amt_vertices;
 }
 
-void data_reduction(){
-    //TODO: reduce data :-)
-}
 
 /*
  * INFO: add a vertex to it's corresponding degree list and update maxmimum_degree
@@ -135,7 +134,7 @@ void remove_from_degree_list(unsigned int vertex){
  * update the degrees and degree lists of all its neighbours, 
  * reduce maximum_degree if a neighbour was the only one with that degree
  */
-void delete_vertex(int vertex, bool put_in_vc){
+void delete_vertex(unsigned int vertex, bool put_in_vc){
 	// add vertex to deletion stack
 	stack_top++;
 	deletion_stack[stack_top] = vertex;
@@ -224,11 +223,33 @@ void reverse_deletion(int stack_checkpoint){
     }
 }
 
+unsigned int data_reduction() {
+    //TODO: reduce data :-)
+    unsigned int k = 0;
+    //degree 1 rule
+    if(maximum_degree == 0){
+        return 0;
+    }
+    while (degree_list[1] != -1) {
+        unsigned int v = degree_list[1];
+        for (int i = 0, j = 0; j < 1; i++) {
+            int w = adj[v][i];
+            if (used[w] == 0) {
+                delete_vertex(v, 0);
+                delete_vertex(w, 1);
+                j++;
+                k++;
+            }
+        }
+    }
+    return k;
+}
 /*
  * INFO: Implement the main vc_branch algorithm as shown in the lecture slides
  */
 bool vc_branch(int k, int stack_checkpoint){
     //TODO: reduce data
+    k -= data_reduction();
     if (k < 0) { // Recursion hook, no vertex cover was found
         return false;
     }
@@ -236,7 +257,6 @@ bool vc_branch(int k, int stack_checkpoint){
     if (maximum_degree <= 0) { 
         return true;
     }
-	
 	// pick a vertex of maximum degree (this is an attempt at an heuristic)
 
     unsigned int v = degree_list[maximum_degree]; 
@@ -377,9 +397,12 @@ int main(int argc, char **argv){
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
 
-    int k = calc_lower_bound();
-    int upper_bound = calc_upper_bound();
+    unsigned int lower_bound = calc_lower_bound();
+    unsigned int upper_bound = calc_upper_bound();
 
+    int k = data_reduction();
+    stack_top = -1;//first reduction is never reversed
+    if(lower_bound > k) k = lower_bound;
     //search for lowest vertex_cover of size k
     while (!vc_branch(k, -1) && k < upper_bound) {
         reverse_deletion(-1); // revert commands executed in prev. vc_branch call

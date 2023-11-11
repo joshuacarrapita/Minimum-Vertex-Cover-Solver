@@ -31,27 +31,31 @@ int *degree_list;
 int *deletion_stack;
 int stack_top = -1; // index of the "topmost" / "most recently added" stack entry
 
+/*
+ * calculates lower_bound as per lecture slides
+ */
 unsigned int calc_lower_bound(){
-	//TODO: calculate lower bound
     unsigned int result = 0;
-    if (maximum_degree > 0) { // don't divide by 0
+    if( maximum_degree > 0 ) { // don't divide by 0 when edges==max_degree==0
 		result = total_amt_edges/maximum_degree;
 	}
     return result;
 }
 
+/*
+ * calculates upper_bound as per lecture slides
+ */
 unsigned int calc_upper_bound(){
-	//TODO: calculate upper bound
 	unsigned int upper_bound = 0;
-	if (maximum_degree == 0) {
+	if (maximum_degree == 0) { // recursion hook, all edges removed
 		return upper_bound;
 	}
+	// find max degree vertex v, calculate on G-{v}
 	unsigned int v = degree_list[maximum_degree]; 
 	delete_vertex(v,1);
-	upper_bound = 1 + calc_upper_bound();
+	upper_bound = 1 + calc_upper_bound(); // update size of vc by +1 for v
     return upper_bound;
 }
-
 
 /*
  * INFO: add a vertex to it's corresponding degree list and update maxmimum_degree
@@ -113,9 +117,9 @@ void delete_vertex(unsigned int v, bool put_in_vc){
 
 	// we only want "active" vertices in the degree lists
 	remove_from_degree_list(v);
-    //check if v was max_degree
+    // check if v was max_degree, unless v had degree 0 (occurs in instance 2 1 \n 1 2)
     if(maximum_degree > 0 && vertex[v].degree == maximum_degree && degree_list[maximum_degree] == -1){
-        //find new max degree
+        // find new max degree
         while(degree_list[maximum_degree] == -1){
             maximum_degree--;
         }
@@ -195,6 +199,9 @@ unsigned int data_reduction() {
         for (int i = 0, j = 0; j < 1; i++) {
             int w = vertex[v].adj[i];
             if (vertex[w].used == 0) {
+				// Necessary for lower_bound calculation, although becomes 
+				// undefined for later data_reduction calls, as total_amt_edges 
+				// doesn't get reversed on reverse_deletion yet
 				total_amt_edges -= vertex[w].degree;
                 delete_vertex(v, 0);
                 delete_vertex(w, 1);
@@ -368,10 +375,21 @@ int main(int argc, char **argv){
 				   
     unsigned int lower_bound = calc_lower_bound();
     unsigned int upper_bound = calc_upper_bound();
+	/*
+	 * if data reduction finds a vertex cover both values are 0 and vc printed
+	 * if all vertices are of degree 0 both values are 0 and nothing is printed
+	 * if data reduction finds some vertices lower_bound < upper_bound, then
+	 * we reverse the deletion mad in calc_upper_bound() and search for rest
+	 */
 
 	if (lower_bound < upper_bound) { 
 		reverse_deletion(-1);
-		//search for lowest vertex_cover of size k
+		/*
+		 * search for lowest vertex_cover of size k
+		 * on if l_b < u_b we can still search, if we get into the while body
+		 * again and they are equal, there was no vc even of size u_b so we 
+		 * return 0
+		 */
 		while (!vc_branch(lower_bound, -1)) {
 			if (lower_bound < upper_bound) {
 			reverse_deletion(-1); // revert commands executed in prev. vc_branch call

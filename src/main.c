@@ -113,7 +113,7 @@ void add_to_degree_list(unsigned int vertex) {
 
 	// update maxmimum_degree
 	if (degree[vertex] > maximum_degree) {
-                maximum_degree = degree[vertex];
+        maximum_degree = degree[vertex];
 	}
 }
 
@@ -205,9 +205,12 @@ void reverse_deletion(int stack_checkpoint){
         unsigned int v = deletion_stack[stack_top];
         used[v] = 0; // set its status to "untouched"
         add_to_degree_list(v); // add it to its corresponding degree list
-        /*
-		 * !! I refactored this into add_to_degree_list, there is a todo for it
-		 * // if v has the highest degree now
+		/*
+		 * TODO: I reallocated the maximum_degree update into add_to_degree_list
+		 * which should still work as the maxmimum_degree will be updated there
+		 * check if you think this makes sense
+		 *
+		 // if v has the highest degree now
 		 * if (degree[v] > maximum_degree) {
             maximum_degree = degree[v]; // we update that
          }*/
@@ -239,7 +242,7 @@ void reverse_deletion(int stack_checkpoint){
             }
         }
 
-        stack_checkpoint--;
+        stack_top--;
     }
 }
 
@@ -345,11 +348,11 @@ int main(int argc, char **argv){
 	 * initialisation of arrays contents with standard data where we can and
 	 * need to
  	 */
+    maximum_degree = 0; // we initialise the maximum degree as 0
     for (int i = 0; i < total_amt_vertices; i++) {
         adj[i] = NULL; // we didn't save any adjacent vertices yet
         used[i] = 0; // all vertices are untouched
         degree[i] = 0; // we initialise degrees for all vertices as 0
-    	maximum_degree = 0; // we initialise the maximum degree as 0
         degree_list_prev[i] = -1; // -1 symbolises NULL in this case means no 
         degree_list_next[i] = -1; // vertex has a previous or following one in 
 								  // his degree_list yet
@@ -377,22 +380,13 @@ int main(int argc, char **argv){
             adj[w] = realloc(adj[w], sizeof(int) * degree[w]);
             adj[w][degree[w] - 1] = v;
 
-			/*
-			 * TODO: I reallocated the maximum_degree update into add_to_degree_list
-			 * which should still work as the maxmimum_degree will be updated
-			 * upon building of the degree list a few lines below but please
-			 * check if you think this makes sense
-			 *
-			 * it also simplifies things in reverse_deletion where you need
-			 * to delete commented out code too if this reallocation is fine
-			 */
 			// update maximum_degree if necessary
-            /*if (degree[v] > maximum_degree) {
+            if (degree[v] > maximum_degree) {
                 maximum_degree = degree[v];
 			}
             if (degree[w] > maximum_degree) {
                 maximum_degree = degree[w];
-            }*/
+            }
 
             counter_edges++;
         }

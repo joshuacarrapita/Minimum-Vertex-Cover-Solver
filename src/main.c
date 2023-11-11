@@ -2,40 +2,13 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include "struct.h"
 
 unsigned int total_amt_vertices; // number of vertices in the graph
 unsigned int total_amt_edges; // number of edges in the graph
 
-/*
- * INFO: a list that contains pointers to each vertex' adjacency list
- * 
- * EXAMPLE: adj[i] contains the int* that points to the adjacency list of
- * vertex i
- *
- * MODIFICATION: content not to be altered after initialisation
- */
-int **adj; 
 
-/*
- * INFO: an array that holds information for each vertex whether it is:
- * deleted and used in vertex cover (2), just deleted(1), or untouched(0)
- *
- * EXAMPLE: used[i] is set to 0/1/2 according to the rules just mentioned if 
- * vertex i is of status (0), (1), or (2)
- *
- * MODIFICATION: content can be altered after initalisation
- */
-char *used; 
-
-/*
- * INFO: an array that holds the degree of each vertex (as unsigned int)
- *
- * EXAMPLE: degree[i] is set to x if vertex i has degree x, means x "undeleted"
- * neighbours
- *
- * MODIFICATION: content can be altered after initialisation
- */
-unsigned int *degree; 
+Vertex *vertex;
 
 int maximum_degree; // Holds the value for the highest degree found in the graph
 /*
@@ -49,16 +22,6 @@ int maximum_degree; // Holds the value for the highest degree found in the graph
  * MODIFICATION: content can be altered after initialisation
  */
 int *degree_list; 
-/*
- * INFO: arrays of size total_amt_vertices that hold the following and previous 
- * vertices in the list of vertices of degree d
- *
- * EXAMPLE: degree_list_next[i] holds value x if vertex x is the following vertex
- * to vertex i in the degree_list that corresponds to vertex i's degree
- *
- * MODIFICATION: content can be altered after initialisation
- */
-int *degree_list_prev, *degree_list_next; 
 
 /*
  * stack of deletions we executed to be able to reverse the graph to a previous
@@ -71,7 +34,7 @@ int stack_top = -1; // index of the "topmost" / "most recently added" stack entr
 unsigned int calc_lower_bound(){
 	//TODO: calculate lower bound
     unsigned int result = 0;
-    if(maximum_degree > 0 ) total_amt_vertices/maximum_degree;
+    if(maximum_degree > 0 ) result = total_amt_vertices/maximum_degree;
     return result;
 }
 
@@ -86,22 +49,15 @@ unsigned int calc_upper_bound(){
  *
  * EXAMPLE: adds vertex x to degree list i if it is of degree i
  */
-void add_to_degree_list(unsigned int vertex) {
-    unsigned int current_degree = degree[vertex];
-	// check if list is empty
-    if (degree_list[current_degree] == -1) { 
-        degree_list[current_degree] = vertex;
-    } else {
-        //put vertex to front of list
-        unsigned int first = degree_list[current_degree];
-        degree_list[current_degree] = vertex;
+void add_to_degree_list(unsigned int v) {
+    unsigned int current_degree = vertex[v].degree;
+	 //put v to front of list
+    unsigned int first = degree_list[current_degree];
+    degree_list[current_degree] = v;
 
-		degree_list_prev[first] = vertex;
-        degree_list_next[vertex] = first; 
-        degree_list_prev[vertex] = -1;
-    }
-
-	// update maxmimum_degree //L: took it out here, since it is not needed in initialization
+    if(first != -1) vertex[first].degree_list_prev = v;
+    vertex[v].degree_list_next = first;
+    vertex[v].degree_list_prev = -1;
 }
 
 /*
@@ -111,20 +67,20 @@ void add_to_degree_list(unsigned int vertex) {
  *
  * EXAMPLE: removes vertex v from degree_list[x] if v was of degree x
  */
-void remove_from_degree_list(unsigned int vertex){
-    unsigned int current_degree = degree[vertex];
+void remove_from_degree_list(unsigned int v){
+    unsigned int current_degree = vertex[v].degree;
 	//update list head if needed
-    if (degree_list[current_degree] == vertex) {
-		degree_list[current_degree] = degree_list_next[vertex];
+    if (degree_list[current_degree] == v) {
+		degree_list[current_degree] = vertex[v].degree_list_next;
     }
-    int next = degree_list_next[vertex];
-    int prev = degree_list_prev[vertex];
+    int next = vertex[v].degree_list_next;
+    int prev = vertex[v].degree_list_prev;
 	// connect prev and next if needed
-    if (next != -1) degree_list_prev[next] = prev;
-    if (prev != -1) degree_list_next[prev] = next;
-	//reset vertex, as it is currently in no list
-    degree_list_next[vertex] = -1;
-    degree_list_prev[vertex] = -1;
+    if (next != -1) vertex[next].degree_list_prev = prev;
+    if (prev != -1) vertex[prev].degree_list_next = next;
+	//reset v, as it is currently in no list
+    vertex[v].degree_list_next = -1;
+    vertex[v].degree_list_prev = -1;
 }
 
 /*
@@ -134,22 +90,22 @@ void remove_from_degree_list(unsigned int vertex){
  * update the degrees and degree lists of all its neighbours, 
  * reduce maximum_degree if a neighbour was the only one with that degree
  */
-void delete_vertex(unsigned int vertex, bool put_in_vc){
-	// add vertex to deletion stack
+void delete_vertex(unsigned int v, bool put_in_vc){
+	// add v to deletion stack
 	stack_top++;
-	deletion_stack[stack_top] = vertex;
+	deletion_stack[stack_top] = v;
 
 	// update used status
 	if (put_in_vc) { 
-		used[vertex] = 2; // vertex gets deleted and put in vertex cover
+		vertex[v].used = 2; // v gets deleted and put in v cover
 	} else {
-		used[vertex] = 1; // vertex gets deleted but not put in vertex cover
+        vertex[v].used = 1; // v gets deleted but not put in v cover
 	}
 
 	// we only want "active" vertices in the degree lists
-	remove_from_degree_list(vertex);
+	remove_from_degree_list(v);
     //check if v was max_degree
-    if(degree[vertex] == maximum_degree && degree_list[maximum_degree] == -1){
+    if(vertex[v].degree == maximum_degree && degree_list[maximum_degree] == -1){
         //find new max degree
         while(degree_list[maximum_degree] == -1){
             maximum_degree--;
@@ -157,19 +113,19 @@ void delete_vertex(unsigned int vertex, bool put_in_vc){
     }
 
 	/*
-	 * remove all "active" neighbours of vertex from their degree lists, update their 
+	 * remove all "active" neighbours of v from their degree lists, update their
 	 * degrees and add them back to the new correct list
 	 */
-	for (int i = 0, j = 0; j < degree[vertex]; i++) {
-		int w = adj[vertex][i];
-        if (used[w] == 0) {
+	for (int i = 0, j = 0; j < vertex[v].degree; i++) {
+		int w = vertex[v].adj[i];
+        if (vertex[w].used == 0) {
 			remove_from_degree_list(w);
 
             //  decrease maximum_degree if needed
-			if (degree[w] == maximum_degree && degree_list[maximum_degree] == -1) {
+			if (vertex[w].degree == maximum_degree && degree_list[maximum_degree] == -1) {
 				maximum_degree--;
 			}
-			degree[w]--;
+			vertex[w].degree--;
 
 			add_to_degree_list(w);
             j++;
@@ -188,43 +144,37 @@ void reverse_deletion(int stack_checkpoint){
     while (stack_top > stack_checkpoint) { 
 		// get the most recently deleted vertex
         unsigned int v = deletion_stack[stack_top];
-        used[v] = 0; // set its status to "untouched"
+        vertex[v].used = 0; // set its status to "untouched"
         add_to_degree_list(v); // add it to its corresponding degree list
 
 		// I reallocated the maximum_degree update into add_to_degree_list //L: i think either both in lists function or neither, since we cant do it for the other, lets keep it here
 		// if v has the highest degree now
-		if (degree[v] > maximum_degree) {
-            maximum_degree = degree[v];
+		if (vertex[v].degree > maximum_degree) {
+            maximum_degree = vertex[v].degree;
         }
 
-		/*
-		 * update neighbors
-		 * 
-		 * only for active ones, as the other are deeper in the deletion_stack
-		 */
-        for (int i = 0, j = 0; j < degree[v]; i++) {
-            unsigned int w = adj[v][i];
-            if (used[w] == 0) {
+		//update neighbors, only for active ones, as the other are deeper in the deletion_stack
+
+        for (int i = 0, j = 0; j < vertex[v].degree; i++) {
+            unsigned int w = vertex[v].adj[i];
+            if (vertex[w].used == 0) {
                 //increase degree and add to correct list
 				remove_from_degree_list(w);
-				degree[w]++;
+				vertex[w].degree++;
 				add_to_degree_list(w);
                 j++;
-
-		 		 // !! I refactored this into add_to_degree_list, there is a todo for it
-
-                if (degree[w] > maximum_degree) {
-                    maximum_degree = degree[w];
+                //check if w has maximum_degree
+                if (vertex[w].degree > maximum_degree) {
+                    maximum_degree = vertex[w].degree;
                 }
             }
         }
-
         stack_top--;
     }
 }
 
 unsigned int data_reduction() {
-    //TODO: reduce data :-)
+    //TODO: more reduction rules
     unsigned int k = 0;
     //degree 1 rule
     if(maximum_degree == 0){
@@ -233,8 +183,8 @@ unsigned int data_reduction() {
     while (degree_list[1] != -1) {
         unsigned int v = degree_list[1];
         for (int i = 0, j = 0; j < 1; i++) {
-            int w = adj[v][i];
-            if (used[w] == 0) {
+            int w = vertex[v].adj[i];
+            if (vertex[w].used == 0) {
                 delete_vertex(v, 0);
                 delete_vertex(w, 1);
                 j++;
@@ -260,14 +210,14 @@ bool vc_branch(int k, int stack_checkpoint){
 	// pick a vertex of maximum degree (this is an attempt at an heuristic)
 
     unsigned int v = degree_list[maximum_degree]; 
-	delete_vertex(v, 2);
+	delete_vertex(v, 1);
 	if (vc_branch(k - 1, stack_top)) {
         return true; // it makes a vertex cover of size k with our deleted one
     }
 
 	//no solution of size k with v
     reverse_deletion(stack_checkpoint);
-    int degree_v = degree[v];//need the current degree, because after deleting the neighborhood deg[v] = 0
+    int degree_v = vertex[v].degree;//need the current degree, because after deleting the neighborhood deg[v] = 0
 	/* 
 	 * delete neighbors and add to vc
 	 *
@@ -276,9 +226,9 @@ bool vc_branch(int k, int stack_checkpoint){
 	 * been deleted which is handled by j and the degree[v]
 	 */ 
     for (int i = 0, j = 0; j < degree_v; i++) {
-		unsigned int w = adj[v][i];
-        if (used[w] == 0) {
-            delete_vertex(w, 2);
+		unsigned int w = vertex[v].adj[i];
+        if (vertex[w].used == 0) {
+            delete_vertex(w, 1);
             j++;
         }
     }
@@ -320,6 +270,8 @@ int main(int argc, char **argv){
 	 * global pointers so we can easily reference the arrays contents from 
 	 * within functions)
 	 */
+    vertex = malloc(total_amt_vertices * sizeof(Vertex));
+    /*
     int *adj_[total_amt_vertices];
     adj = adj_;
 
@@ -333,9 +285,9 @@ int main(int argc, char **argv){
 	int degree_list_prev_[total_amt_vertices];
     degree_list_next = degree_list_next_;
     degree_list_prev = degree_list_prev_;
-
-    int deletion_stack_[total_amt_vertices]; 
-    deletion_stack = deletion_stack_;
+*/
+    //int deletion_stack_[total_amt_vertices];
+    deletion_stack = malloc(total_amt_vertices * sizeof(int));
 
 	/*
 	 * initialisation of arrays contents with standard data where we can and
@@ -343,12 +295,12 @@ int main(int argc, char **argv){
  	 */
     maximum_degree = 0;
     for (int i = 0; i < total_amt_vertices; i++) {
-        adj[i] = NULL;
-        used[i] = 0;
+        vertex[i].adj = NULL;
+        vertex[i].used = 0;
 		deletion_stack[i] = -1; // not necessary but makes debugging easier
-        degree[i] = 0;
-        degree_list_prev[i] = -1; // -1 symbolises NULL
-        degree_list_next[i] = -1;
+        vertex[i].used = 0;
+        vertex[i].degree_list_prev = -1; // -1 symbolises NULL
+        vertex[i].degree_list_next = -1;
     }
 
 	// parse edges to update vertex degrees and fill their adjacency lists
@@ -364,21 +316,21 @@ int main(int argc, char **argv){
             unsigned int w = (unsigned int) strtol(ptr, (char **) NULL, 10) - 1;
 
             // increase degree for both
-            degree[v]++;
-            degree[w]++;
+            vertex[v].degree++;
+            vertex[w].degree++;
 
             // add to each others adjacency lists
-            adj[v] = realloc(adj[v], sizeof(int) * degree[v]);
-            adj[v][degree[v] - 1] = w;
-            adj[w] = realloc(adj[w], sizeof(int) * degree[w]);
-            adj[w][degree[w] - 1] = v;
+            vertex[v].adj = realloc(vertex[v].adj, sizeof(int) * vertex[v].degree);
+            vertex[v].adj[vertex[v].degree - 1] = w;
+            vertex[w].adj = realloc(vertex[w].adj, sizeof(int) * vertex[w].degree);
+            vertex[w].adj[vertex[w].degree - 1] = v;
 
 			// update maximum_degree if necessary
-            if (degree[v] > maximum_degree) {
-                maximum_degree = degree[v];
+            if (vertex[v].degree > maximum_degree) {
+                maximum_degree = vertex[v].degree;
 			}
-            if (degree[w] > maximum_degree) {
-                maximum_degree = degree[w];
+            if (vertex[w].degree > maximum_degree) {
+                maximum_degree =vertex[w].degree;
             }
 
             counter_edges++;
@@ -391,7 +343,9 @@ int main(int argc, char **argv){
 	// set first elements of all degree lists to -1 (symbolises NULL)
     for (int i = 0; i <= maximum_degree; i++) degree_list[i] = -1;
 	// add each vertex to its corresponding degree list
-    for (int i = 0; i < total_amt_vertices; i++) add_to_degree_list(i);
+    for (int i = 0; i < total_amt_vertices; i++) {
+        if(vertex[i].degree > 0) add_to_degree_list(i);// 0-list has no effect
+    }
 
     //////////////////////////////////////////////////////////////////////////
     //// calculate solution 
@@ -407,14 +361,13 @@ int main(int argc, char **argv){
     while (!vc_branch(k, -1) && k < upper_bound) {
         reverse_deletion(-1); // revert commands executed in prev. vc_branch call
         k++;
-        //printf("k = %d", k);
     }
 
     //////////////////////////////////////////////////////////////////////////
     //// print solution
     //////////////////////////////////////////////////////////////////////////
     for (int i = 0; i < total_amt_vertices; i++) {
-        if (used[i] == 2) {
+        if (vertex[i].used == 2) {
             printf("%d\n", i+1);
         }
     }

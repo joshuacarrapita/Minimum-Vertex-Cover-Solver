@@ -37,7 +37,7 @@ int stack_top = -1; // index of the "topmost" / "most recently added" stack entr
 unsigned int calc_lower_bound(){
     unsigned int result = 0;
     if( maximum_degree > 0 ) { // don't divide by 0 when edges==max_degree==0
-		result = total_amt_edges/maximum_degree;
+		result = (total_amt_edges + (maximum_degree-1))/maximum_degree; // weird term rounds up
 	}
     return result;
 }
@@ -117,6 +117,7 @@ void delete_vertex(unsigned int v, bool put_in_vc){
 
 	// we only want "active" vertices in the degree lists
 	remove_from_degree_list(v);
+	total_amt_edges-=vertex[v].degree;
     // check if v was max_degree, unless v had degree 0 (occurs in instance 2 1 \n 1 2)
     if(maximum_degree > 0 && vertex[v].degree == maximum_degree && degree_list[maximum_degree] == -1){
         // find new max degree
@@ -159,6 +160,7 @@ void reverse_deletion(int stack_checkpoint){
         unsigned int v = deletion_stack[stack_top];
         vertex[v].used = 0; // set its status to "untouched"
         add_to_degree_list(v); // add it to its corresponding degree list
+		total_amt_edges+=vertex[v].degree;
 
 		// I reallocated the maximum_degree update into add_to_degree_list //L: i think either both in lists function or neither, since we cant do it for the other, lets keep it here
 		// if v has the highest degree now
@@ -199,10 +201,6 @@ unsigned int data_reduction() {
         for (int i = 0, j = 0; j < 1; i++) {
             int w = vertex[v].adj[i];
             if (vertex[w].used == 0) {
-				// Necessary for lower_bound calculation, although becomes 
-				// undefined for later data_reduction calls, as total_amt_edges 
-				// doesn't get reversed on reverse_deletion yet
-				total_amt_edges -= vertex[w].degree;
                 delete_vertex(v, 0);
                 delete_vertex(w, 1);
                 j++;
@@ -212,6 +210,7 @@ unsigned int data_reduction() {
     }
     return k;
 }
+
 /*
  * INFO: Implement the main vc_branch algorithm as shown in the lecture slides
  */
@@ -222,11 +221,16 @@ bool vc_branch(int k, int stack_checkpoint){
         return false;
     }
 	// graph is edgless => vertex_cover of size k
+	// TODO: IMO this could be maximum_degree == 0, there is no situation where
+	// it should be negative
     if (maximum_degree <= 0) { 
         return true;
     }
-	// pick a vertex of maximum degree (this is an attempt at an heuristic)
+	// we want to find a vc with k vertices but need more -> impossible
+	if (k < calc_lower_bound()) return false;
 
+
+	// pick a vertex of maximum degree (this is an attempt at an heuristic)
     unsigned int v = degree_list[maximum_degree]; 
     int old_stack_top = stack_top;
 	delete_vertex(v, 1);
@@ -375,13 +379,13 @@ int main(int argc, char **argv){
 				   
     unsigned int lower_bound = calc_lower_bound();
     unsigned int upper_bound = calc_upper_bound();
+
 	/*
 	 * if data reduction finds a vertex cover both values are 0 and vc printed
 	 * if all vertices are of degree 0 both values are 0 and nothing is printed
 	 * if data reduction finds some vertices lower_bound < upper_bound, then
 	 * we reverse the deletion mad in calc_upper_bound() and search for rest
 	 */
-
 	if (lower_bound < upper_bound) { 
 		reverse_deletion(-1);
 		/*
@@ -392,8 +396,8 @@ int main(int argc, char **argv){
 		 */
 		while (!vc_branch(lower_bound, -1)) {
 			if (lower_bound < upper_bound) {
-			reverse_deletion(-1); // revert commands executed in prev. vc_branch call
-			lower_bound++;
+				reverse_deletion(-1); // revert commands executed in prev. vc_branch call
+				lower_bound++;
 			} else {
 				return 0;
 			}

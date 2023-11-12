@@ -380,28 +380,26 @@ int main(int argc, char **argv){
     unsigned int lower_bound = calc_lower_bound();
     unsigned int upper_bound = calc_upper_bound();
 
-	/*
-	 * if data reduction finds a vertex cover both values are 0 and vc printed
-	 * if all vertices are of degree 0 both values are 0 and nothing is printed
-	 * if data reduction finds some vertices lower_bound < upper_bound, then
-	 * we reverse the deletion mad in calc_upper_bound() and search for rest
-	 */
+	
 	if (lower_bound < upper_bound) { 
-		reverse_deletion(-1);
 		/*
 		 * search for lowest vertex_cover of size k
 		 * on if l_b < u_b we can still search, if we get into the while body
-		 * again and they are equal, there was no vc even of size u_b so we 
-		 * return 0
+		 * again and they are equal, we need to do the last iteration to set
+		 * the used's right
 		 */
-		while (!vc_branch(lower_bound, -1)) {
-			if (lower_bound < upper_bound) {
-				reverse_deletion(-1); // revert commands executed in prev. vc_branch call
-				lower_bound++;
+		int M = lower_bound + (upper_bound-lower_bound)/2;
+		while (lower_bound != upper_bound){
+			reverse_deletion(-1);
+			if(vc_branch(M,-1)) {
+				upper_bound = M;
 			} else {
-				return 0;
+				lower_bound = M+1;
 			}
+			M = lower_bound + (upper_bound-lower_bound)/2;
 		}
+		reverse_deletion(-1);
+		vc_branch(lower_bound, -1);
 	}
 
     //////////////////////////////////////////////////////////////////////////

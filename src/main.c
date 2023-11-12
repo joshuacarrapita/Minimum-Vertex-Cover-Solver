@@ -36,7 +36,7 @@ int stack_top = -1; // index of the "topmost" / "most recently added" stack entr
  */
 unsigned int calc_lower_bound(){
     unsigned int result = 0;
-    if( maximum_degree > 0 ) { // don't divide by 0 when edges==max_degree==0
+    if( maximum_degree > 0 ) { // don't divide by 0 when edges == max_degree == 0
 		result = (total_amt_edges + (maximum_degree-1))/maximum_degree; // weird term rounds up
 	}
     return result;
@@ -117,7 +117,7 @@ void delete_vertex(unsigned int v, bool put_in_vc){
 
 	// we only want "active" vertices in the degree lists
 	remove_from_degree_list(v);
-	total_amt_edges-=vertex[v].degree;
+	total_amt_edges -= vertex[v].degree;
     // check if v was max_degree, unless v had degree 0 (occurs in instance 2 1 \n 1 2)
     if(maximum_degree > 0 && vertex[v].degree == maximum_degree && degree_list[maximum_degree] == -1){
         // find new max degree
@@ -160,7 +160,7 @@ void reverse_deletion(int stack_checkpoint){
         unsigned int v = deletion_stack[stack_top];
         vertex[v].used = 0; // set its status to "untouched"
         add_to_degree_list(v); // add it to its corresponding degree list
-		total_amt_edges+=vertex[v].degree;
+		total_amt_edges += vertex[v].degree;
 
 		// I reallocated the maximum_degree update into add_to_degree_list //L: i think either both in lists function or neither, since we cant do it for the other, lets keep it here
 		// if v has the highest degree now
@@ -196,6 +196,49 @@ unsigned int data_reduction() {
 		return 0;
     }
     unsigned int k = 0;
+
+    //degree 2-rule
+    if(maximum_degree >= 2){
+        unsigned int v = degree_list[2];
+        while(v != -1){
+            //get the two neighbors
+            unsigned int neighbors[2];
+            for(int i = 0, j = 0; j < 2; i++){
+                unsigned int w = vertex[v].adj[i];
+                if(vertex[w].used == 0){
+                    neighbors[j] = w;
+                    j++;
+                }
+            }
+            //get the one with lower degree
+            int x = 0;
+            if(vertex[neighbors[1]].degree < vertex[neighbors[0]].degree) x = 1;
+
+            //check if they are adjacent
+            char are_adj = 0;
+            for(int i = 0, j = 0; j < vertex[neighbors[x]].degree; i++){
+                unsigned int w = vertex[neighbors[x]].adj[i];
+                if(vertex[w].used == 0){
+                    if(w == neighbors[(x +1)%2]){
+                        are_adj = 1;
+                        break;
+                    }
+                    j++;
+                }
+            }
+            if(are_adj){ //triangle rule
+                delete_vertex(v, 0);
+                delete_vertex(neighbors[0], 1);
+                delete_vertex(neighbors[1], 1);
+                k += 2;
+                v = degree_list[2];
+            }else{//TODO: forward deg-2 rule, substancially more work required
+                unsigned int next = vertex[v].degree_list_next;
+                v = next;
+            }
+        }
+    }
+
     while (degree_list[1] != -1) {
         unsigned int v = degree_list[1];
         for (int i = 0, j = 0; j < 1; i++) {

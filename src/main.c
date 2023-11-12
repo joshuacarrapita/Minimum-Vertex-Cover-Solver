@@ -6,6 +6,8 @@
 
 unsigned int total_amt_vertices; // number of vertices in the graph
 unsigned int total_amt_edges; // number of edges in the graph
+unsigned int upper_bound;
+unsigned int highest_remaining_k;
 Vertex *vertex;
 
 void delete_vertex(unsigned int v, bool put_in_vc);
@@ -46,15 +48,15 @@ unsigned int calc_lower_bound(){
  * calculates upper_bound as per lecture slides
  */
 unsigned int calc_upper_bound(){
-	unsigned int upper_bound = 0;
+	unsigned int result = 0;
 	if (maximum_degree == 0) { // recursion hook, all edges removed
-		return upper_bound;
+		return result;
 	}
 	// find max degree vertex v, calculate on G-{v}
 	unsigned int v = degree_list[maximum_degree]; 
 	delete_vertex(v,1);
-	upper_bound = 1 + calc_upper_bound(); // update size of vc by +1 for v
-    return upper_bound;
+	result = 1 + calc_upper_bound(); // update size of vc by +1 for v
+    return result;
 }
 
 /*
@@ -257,7 +259,7 @@ unsigned int data_reduction() {
 /*
  * INFO: Implement the main vc_branch algorithm as shown in the lecture slides
  */
-bool vc_branch(int k, int stack_checkpoint){
+bool vc_branch(int k){
     //TODO: reduce data
     k -= data_reduction();
     if (k < 0) { // Recursion hook, no vertex cover was found
@@ -267,6 +269,7 @@ bool vc_branch(int k, int stack_checkpoint){
 	// TODO: IMO this could be maximum_degree == 0, there is no situation where
 	// it should be negative
     if (maximum_degree <= 0) { 
+		highest_remaining_k = k;
         return true;
     }
 	// we want to find a vc with k vertices but need more -> impossible
@@ -275,14 +278,14 @@ bool vc_branch(int k, int stack_checkpoint){
 
 	// pick a vertex of maximum degree (this is an attempt at an heuristic)
     unsigned int v = degree_list[maximum_degree]; 
-    int old_stack_top = stack_top;
+    int stack_checkpoint = stack_top;
 	delete_vertex(v, 1);
-	if (vc_branch(k - 1, stack_top)) {
+	if (vc_branch(k - 1)) {
         return true; // it makes a vertex cover of size k with our deleted one
     }
 
 	//no solution of size k with v
-    reverse_deletion(old_stack_top);
+    reverse_deletion(stack_checkpoint);
     int degree_v = vertex[v].degree;//need the current degree, because after deleting the neighborhood deg[v] = 0
 	/* 
 	 * delete neighbors and add to vc
@@ -302,7 +305,7 @@ bool vc_branch(int k, int stack_checkpoint){
 	/*
 	 * check with all neighnors in vc
 	 */ 
-    if (vc_branch(k - degree_v, stack_top)) {
+    if (vc_branch(k - degree_v)) {
         return true; // it makes a vertex cover of size k with our deleted ones
     }
 
@@ -421,7 +424,7 @@ int main(int argc, char **argv){
     stack_top = -1;//first reduction is never reversed
 				   
     unsigned int lower_bound = calc_lower_bound();
-    unsigned int upper_bound = calc_upper_bound();
+    upper_bound = calc_upper_bound();
 
 	
 	if (lower_bound < upper_bound) { 
@@ -431,18 +434,18 @@ int main(int argc, char **argv){
 		 * again and they are equal, we need to do the last iteration to set
 		 * the used's right
 		 */
-		int M = lower_bound + (upper_bound-lower_bound)/2;
+		int k = lower_bound + (upper_bound-lower_bound)/2;
 		while (lower_bound != upper_bound){
 			reverse_deletion(-1);
-			if(vc_branch(M,-1)) {
-				upper_bound = M;
+			if(vc_branch(k)) {
+				upper_bound = k - highest_remaining_k;
 			} else {
-				lower_bound = M+1;
+				lower_bound = k+1;
 			}
-			M = lower_bound + (upper_bound-lower_bound)/2;
+			k = lower_bound + (upper_bound-lower_bound)/2;
 		}
 		reverse_deletion(-1);
-		vc_branch(lower_bound, -1);
+		vc_branch(lower_bound);
 	}
 
     //////////////////////////////////////////////////////////////////////////

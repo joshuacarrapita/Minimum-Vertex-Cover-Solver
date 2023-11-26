@@ -1,7 +1,3 @@
-//
-// Created by levent on 11/11/23.
-//
-
 #ifndef VERTEXCOVER_STRUCT_H
 #define VERTEXCOVER_STRUCT_H
 
@@ -16,6 +12,7 @@ Vertex *vertex;
 void delete_vertex(unsigned int v, bool put_in_vc);
 
 int maximum_degree; // Holds the value for the highest degree found in the graph
+
 /*
  * INFO: an array of size maximum_degree that holds the index of the first
  * vertex that represents a degree
@@ -34,7 +31,12 @@ int *degree_list;
  * vertices than that
  */
 int *deletion_stack;
+
 int stack_top = -1; // index of the "topmost" / "most recently added" stack entry
 
+/*
+ * Parses input and initialises global variables with it.
+ */
+void initialize_globals();
 
 #endif //VERTEXCOVER_STRUCT_H

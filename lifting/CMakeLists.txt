@@ -23,25 +23,25 @@ if(CMAKE_BUILD_TYPE STREQUAL "Profile")
 endif()
 
 # Add your source files
-add_executable(vertex_cover ./src/main.c)
+add_executable(lifting ./src/main.c)
 
 # Choose the compiler
 set(CMAKE_C_COMPILER "gcc")
 
 # Specify different compile options for Debug and Release builds
-target_compile_options(vertex_cover PRIVATE
+target_compile_options(lifting PRIVATE
     $<$<CONFIG:Debug>: -g -O0 -Wall -Wextra -pedantic -std=c11>
     $<$<CONFIG:Profile>: -pg -O0 -Wall -Wextra -pedantic -std=c11>
 	$<$<CONFIG:Release>: -O3 -march=native -Wall -Wextra -pedantic -std=c11>
 )
 
 # Specify different preprocessor definitions for Debug and Release builds
-target_compile_definitions(vertex_cover PRIVATE
+target_compile_definitions(lifting PRIVATE
     $<$<CONFIG:Debug>:DEBUG=1>
 )
 
 # Specify different include directories for Debug and Release builds if necessary
-target_include_directories(vertex_cover PRIVATE include)
+target_include_directories(lifting PRIVATE include)
 # target_include_directories(your_executable PRIVATE
 #     $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/debug_include>
 #     $<$<CONFIG:Release>:${CMAKE_SOURCE_DIR}/release_include>

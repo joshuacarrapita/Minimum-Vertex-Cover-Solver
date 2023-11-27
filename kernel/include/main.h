@@ -6,19 +6,18 @@
 //////////////////////////////////////////////////////////////////////////
 //// global variables used in every file
 //////////////////////////////////////////////////////////////////////////
-unsigned int total_amt_vertices;
-unsigned int total_amt_edges;
+extern unsigned int total_amt_vertices;
+extern unsigned int total_amt_edges;
 							  
-unsigned int current_amt_vertices;
-unsigned int current_amt_edges;
+extern unsigned int current_amt_vertices;
+extern unsigned int current_amt_edges;
 
-unsigned int upper_bound;
-unsigned int highest_remaining_k;
-Vertex *vertex;
+extern unsigned int upper_bound;
+extern unsigned int highest_remaining_k;
+extern Vertex *vertex;
 
-void delete_vertex(unsigned int v, bool put_in_vc);
 
-int maximum_degree; // holds the value for the highest degree found in the graph
+extern int maximum_degree; // holds the value for the highest degree found in the graph
 
 /*
  * INFO: an array of size maximum_degree that holds the index of the first
@@ -30,16 +29,16 @@ int maximum_degree; // holds the value for the highest degree found in the graph
  *
  * MODIFICATION: content can be altered after initialisation
  */
-int *degree_list; 
+extern int *degree_list; 
 
 /*
  * stack of deletions we executed to be able to reverse the graph to a previous
  * condition, can be at most total_amt_vertices long as we can't delete more
  * vertices than that
  */
-int *deletion_stack;
+extern int *deletion_stack;
 
-int stack_top = -1; // index of the "topmost" / "most recently added" stack entry
+extern int stack_top; // index of the "topmost" / "most recently added" stack entry
 
 //////////////////////////////////////////////////////////////////////////
 //// functions

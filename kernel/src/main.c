@@ -6,6 +6,25 @@
 #include "graph.h"
 #include "io.h"
 
+unsigned int total_amt_vertices;
+unsigned int total_amt_edges;
+							  
+unsigned int current_amt_vertices;
+unsigned int current_amt_edges;
+
+unsigned int upper_bound;
+unsigned int highest_remaining_k;
+
+Vertex *vertex;
+
+
+int maximum_degree; // holds the value for the highest degree found in the graph
+int *degree_list; 
+
+int *deletion_stack;
+
+int stack_top = -1; // index of the "topmost" / "most recently added" stack entry
+
 unsigned int calc_lower_bound(){
     unsigned int result = 0;
     if( maximum_degree > 0 ) { // don't divide by 0 when edges == max_degree == 0

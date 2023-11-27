@@ -1,4 +1,7 @@
+#include <stdio.h>
+#include <stdbool.h>
 #include "main.h"
+#include "graph.h"
 
 //////////////////////////////////////////////////////////////////////////
 //// in
@@ -71,8 +74,7 @@ void print_reduction_solution(){
 	printf("#STARTReductionSolution");
 	for (int i = 0; i < total_amt_vertices; i++) {
 			if (vertex[i].used == 2) {
-				if (comment) printf("#%d\n", i+1);
-				else printf("#%d\n", i+1);
+				printf("#%d\n", i+1);
 			}
 		}
 	printf("#ENDReductionSolution");
@@ -85,7 +87,7 @@ void print_solution_graph(){
 	printf("\n%d", total_amt_edges);
 
 	// print edges
-	for (int v = 0; v < total_amt_vertices; i++) {
+	for (int v = 0; v < total_amt_vertices; v++) {
         if (vertex[v].used == 0) {
 			for (int i = 0, j = 0; j < vertex[v].degree; i++) {
 				if(vertex[vertex[v].adj[i]].used == 0){
@@ -93,7 +95,7 @@ void print_solution_graph(){
 					j++;
 				}
 			}
-			delete_vertex(vertex[v],0); // don't need the graph after kernel
+			delete_vertex( v, 0); // don't need the graph after kernel
 		}
 	}
 }

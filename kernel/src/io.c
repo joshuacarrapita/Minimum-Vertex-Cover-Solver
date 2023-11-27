@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 #include "main.h"
 #include "graph.h"
 
@@ -7,17 +9,19 @@
 //// in
 //////////////////////////////////////////////////////////////////////////
 void parseinput(){
+
 	// prepare line reading
 	char* line = NULL;
 	size_t len = 0;
 	getline(&line, &len, stdin);
-	
+
  	// ignore comment lines
 	while (line[0] == '#') getline(&line, &len, stdin);
 
 	// init total edge and vertex count
 	char *ptr = strtok(line, " ");
-	total_amt_vertices = strtol(ptr, (char**) NULL, 10);
+	char *endptr;
+	total_amt_vertices = strtol(ptr,(char **) NULL , 10);
 	ptr = strtok(NULL, " ");
 	total_amt_edges = strtol(ptr, (char**) NULL, 10);
 
@@ -25,7 +29,6 @@ void parseinput(){
 	vertex = malloc(total_amt_vertices * sizeof(Vertex));
 	for (int i = 0; i < total_amt_vertices; i++) {
 		vertex[i].adj = NULL;
-		vertex[i].used = 0;
 		vertex[i].used = 0;
 		vertex[i].degree_list_prev = -1; // -1 symbolises NULL
 		vertex[i].degree_list_next = -1;
@@ -80,11 +83,10 @@ void print_reduction_solution(){
 	printf("#ENDReductionSolution");
 }
 
-void print_solution_graph(int difference){
+void print_solution_graph(unsigned int difference){
 	// print header
-	printf("\n#difference: %d",difference);
-	printf("\n%d", total_amt_vertices);
-	printf("\n%d", total_amt_edges);
+	printf("\n#difference: %d", difference);
+	printf("\n%d %d", current_amt_vertices,current_amt_edges);
 
 	// print edges
 	for (int v = 0; v < total_amt_vertices; v++) {

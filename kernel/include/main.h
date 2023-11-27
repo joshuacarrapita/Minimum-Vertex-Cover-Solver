@@ -2,17 +2,23 @@
 #define KERNEL_INCLUDE_MAIN_H
 
 #include "graph.h"
-//global variables used in every file
 
-unsigned int total_amt_vertices; // number of vertices in the graph
-unsigned int total_amt_edges; // number of edges in the graph
+//////////////////////////////////////////////////////////////////////////
+//// global variables used in every file
+//////////////////////////////////////////////////////////////////////////
+unsigned int total_amt_vertices;
+unsigned int total_amt_edges;
+							  
+unsigned int current_amt_vertices;
+unsigned int current_amt_edges;
+
 unsigned int upper_bound;
 unsigned int highest_remaining_k;
 Vertex *vertex;
 
 void delete_vertex(unsigned int v, bool put_in_vc);
 
-int maximum_degree; // Holds the value for the highest degree found in the graph
+int maximum_degree; // holds the value for the highest degree found in the graph
 
 /*
  * INFO: an array of size maximum_degree that holds the index of the first
@@ -35,9 +41,20 @@ int *deletion_stack;
 
 int stack_top = -1; // index of the "topmost" / "most recently added" stack entry
 
+//////////////////////////////////////////////////////////////////////////
+//// functions
+//////////////////////////////////////////////////////////////////////////
+unsigned int calc_lower_bound(){
+
+unsigned int calc_upper_bound();
+
+unsigned int data_reduction();
+
+bool vc_branch(int k);
+
 /*
  * Parses input and initialises global variables with it.
  */
 void initialize_globals();
 
-#endif //VERTEXCOVER_STRUCT_H
+#endif

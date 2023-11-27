@@ -4,22 +4,16 @@
 #include <string.h>
 #include "main.h"
 #include "graph.h"
+#include "io.h"
 
-
-/*
- * calculates lower_bound as per lecture slides
- */
 unsigned int calc_lower_bound(){
     unsigned int result = 0;
     if( maximum_degree > 0 ) { // don't divide by 0 when edges == max_degree == 0
-		result = (total_amt_edges + (maximum_degree-1))/maximum_degree; // weird term rounds up
+		result = (current_amt_edges + (maximum_degree-1))/maximum_degree; // weird term rounds up
 	}
     return result;
 }
 
-/*
- * calculates upper_bound as per lecture slides
- */
 unsigned int calc_upper_bound(){
 	unsigned int result = 0;
 	if (maximum_degree == 0) { // recursion hook, all edges removed
@@ -31,8 +25,6 @@ unsigned int calc_upper_bound(){
 	result = 1 + calc_upper_bound(); // update size of vc by +1 for v
     return result;
 }
-
-
 
 unsigned int data_reduction() {
     //TODO: more reduction rules
@@ -100,9 +92,6 @@ unsigned int data_reduction() {
     return k;
 }
 
-/*
- * INFO: Implement the main vc_branch algorithm as shown in the lecture slides
- */
 bool vc_branch(int k){
     //TODO: reduce data
     k -= data_reduction();
@@ -157,127 +146,53 @@ bool vc_branch(int k){
     return false; 
 }
 
-/*
- * INFO: Parse input and initialize everything, calculate solution, print solution
- */
+void initialize_globals(){
+	maximum_degree = 0;
+
+	parseinput();
+
+	current_amt_edges = total_amt_edges;
+	current_amt_vertices = total_amt_vertices;
+
+	// alloc deletion_stack mem and init with standard content
+	deletion_stack = malloc(total_amt_vertices * sizeof(int));
+	for (int i = 0; i < total_amt_vertices; i++) deletion_stack[i] = -1;
+
+	/*
+	 * alloc degree_list array and init with content
+	 * -> set first elements of all degree lists to -1 (symbolises NULL)
+	 * -> add each vertex to its corresponding degree list
+	 */
+	degree_list = malloc(sizeof(Vertex) * (maximum_degree + 1));
+	for (int i = 0; i <= maximum_degree; i++) degree_list[i] = -1;
+	for (int i = 0; i < total_amt_vertices; i++) {
+		if(vertex[i].degree > 0) add_to_degree_list(i); // 0-list has no effect
+	}
+}
+
 int main(int argc, char **argv){
     //////////////////////////////////////////////////////////////////////////
     //// parse input and initialize everything
     //////////////////////////////////////////////////////////////////////////
-    char* line = NULL;
-    size_t len = 0;
-    getline(&line, &len, stdin);
-
-    while (line[0] == '#') getline(&line, &len, stdin); // ignore comment lines
-
-    // init edge and vertex count
-    char *ptr = strtok(line, " ");
-    total_amt_vertices = strtol(ptr, (char**) NULL, 10);
-    ptr = strtok(NULL, " ");
-    total_amt_edges = strtol(ptr, (char**) NULL, 10);
-
-	/*
-   	 * init all arrays and their pointers (we use static arrays so that they 
-	 * will be allocated in proximity to each other in memory and also because 
-	 * we can and dont have to worry about freeing memory, we still use
-	 * global pointers so we can easily reference the arrays contents from 
-	 * within functions)
-	 */
-    vertex = malloc(total_amt_vertices * sizeof(Vertex));
-    /*
-    int *adj_[total_amt_vertices];
-    adj = adj_;
-
-    char used_[total_amt_vertices];
-    used = used_;
-
-    unsigned int degree_[total_amt_vertices];
-    degree = degree_;
-
-    int degree_list_next_[total_amt_vertices];
-	int degree_list_prev_[total_amt_vertices];
-    degree_list_next = degree_list_next_;
-    degree_list_prev = degree_list_prev_;
-	*/
-    //int deletion_stack_[total_amt_vertices];
-    deletion_stack = malloc(total_amt_vertices * sizeof(int));
-
-	/*
-	 * initialisation of arrays contents with standard data where we can and
-	 * need to
- 	 */
-    maximum_degree = 0;
-    for (int i = 0; i < total_amt_vertices; i++) {
-        vertex[i].adj = NULL;
-        vertex[i].used = 0;
-		deletion_stack[i] = -1; // not necessary but makes debugging easier
-        vertex[i].used = 0;
-        vertex[i].degree_list_prev = -1; // -1 symbolises NULL
-        vertex[i].degree_list_next = -1;
-    }
-
-	// parse edges to update vertex degrees and fill their adjacency lists
-    int counter_edges = 0;
-    while (counter_edges < total_amt_edges) {
-        getline(&line, &len, stdin);
-        if (line[0] != '#') { // skip comments
-							  
-            // get vertices v and w of edge
-            ptr = strtok(line, " ");
-            unsigned int v = (unsigned int) strtol(ptr, (char **) NULL, 10) - 1;
-            ptr = strtok(NULL, " ");
-            unsigned int w = (unsigned int) strtol(ptr, (char **) NULL, 10) - 1;
-
-            // increase degree for both
-            vertex[v].degree++;
-            vertex[w].degree++;
-
-            // add to each others adjacency lists
-            vertex[v].adj = realloc(vertex[v].adj, sizeof(int) * vertex[v].degree);
-            vertex[v].adj[vertex[v].degree - 1] = w;
-            vertex[w].adj = realloc(vertex[w].adj, sizeof(int) * vertex[w].degree);
-            vertex[w].adj[vertex[w].degree - 1] = v;
-
-			// update maximum_degree if necessary
-            if (vertex[v].degree > maximum_degree) {
-                maximum_degree = vertex[v].degree;
-			}
-            if (vertex[w].degree > maximum_degree) {
-                maximum_degree =vertex[w].degree;
-            }
-
-            counter_edges++;
-        }
-    }
-
-    // initialize degree_list array and its pointer
-    //int degree_list_[maximum_degree + 1]; // +1 because we have vertices with 0 adj
-    // malloc is safer!
-    degree_list = malloc(sizeof(Vertex) * (maximum_degree + 1));
-	// set first elements of all degree lists to -1 (symbolises NULL)
-    for (int i = 0; i <= maximum_degree; i++) degree_list[i] = -1;
-	// add each vertex to its corresponding degree list
-    for (int i = 0; i < total_amt_vertices; i++) {
-        if(vertex[i].degree > 0) add_to_degree_list(i);// 0-list has no effect
-    }
+	initialize_globals();
 
     //////////////////////////////////////////////////////////////////////////
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
 	data_reduction();
-    stack_top = -1;//first reduction is never reversed
+    /*stack_top = -1;//first reduction is never reversed
 				   
     unsigned int lower_bound = calc_lower_bound();
     upper_bound = calc_upper_bound();
 
 	
 	if (lower_bound < upper_bound) { 
-		/*
+		 *
 		 * search for lowest vertex_cover of size k
 		 * on if l_b < u_b we can still search, if we get into the while body
 		 * again and they are equal, we need to do the last iteration to set
 		 * the used's right
-		 */
+		 *
 		int k = lower_bound + (upper_bound-lower_bound)/2;
 		while (lower_bound != upper_bound){
 			reverse_deletion(-1);
@@ -291,15 +206,13 @@ int main(int argc, char **argv){
 		reverse_deletion(-1);
 		vc_branch(lower_bound);
 	}
+	*/
 
     //////////////////////////////////////////////////////////////////////////
     //// print solution
     //////////////////////////////////////////////////////////////////////////
-    for (int i = 0; i < total_amt_vertices; i++) {
-        if (vertex[i].used == 2) {
-            printf("%d\n", i+1);
-        }
-    }
+	print_reduction_solution();
+    print_solution_graph();
 
     return 0;
 }

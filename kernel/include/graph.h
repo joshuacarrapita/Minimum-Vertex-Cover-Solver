@@ -1,6 +1,6 @@
-
 #ifndef KERNEL_INCLUDE_GRAPH_H 
 #define KERNEL_INCLUDE_GRAPH_H 
+
 typedef struct Vertex{
     int *adj; //adjency list of vertex
     char used;//is vertex untouched(0), deleted(1) or in vc (2)
@@ -16,7 +16,6 @@ typedef struct Vertex{
  *
  * EXAMPLE: adds vertex x to degree list i if it is of degree i
  */
-
 void add_to_degree_list(unsigned int v);
 
 
@@ -49,7 +48,5 @@ void delete_vertex(unsigned int v, bool put_in_vc);
  */
 
 void reverse_deletion(int stack_checkpoint);
-
-
 
 #endif 

@@ -1,5 +1,8 @@
 #include "main.h"
 
+//////////////////////////////////////////////////////////////////////////
+//// in
+//////////////////////////////////////////////////////////////////////////
 void parseinput(){
 	// prepare line reading
 	char* line = NULL;
@@ -56,6 +59,41 @@ void parseinput(){
 			}
 
 			counter_edges++;
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//// out
+//////////////////////////////////////////////////////////////////////////
+void print_reduction_solution(){
+	printf("#STARTReductionSolution");
+	for (int i = 0; i < total_amt_vertices; i++) {
+			if (vertex[i].used == 2) {
+				if (comment) printf("#%d\n", i+1);
+				else printf("#%d\n", i+1);
+			}
+		}
+	printf("#ENDReductionSolution");
+}
+
+void print_solution_graph(){
+	// print header
+	printf("\n#difference: %d", total_amt_vertices-current_amt_vertices);
+	printf("\n%d", total_amt_vertices);
+	printf("\n%d", total_amt_edges);
+
+	// print edges
+	for (int v = 0; v < total_amt_vertices; i++) {
+        if (vertex[v].used == 0) {
+			for (int i = 0, j = 0; j < vertex[v].degree; i++) {
+				if(vertex[vertex[v].adj[i]].used == 0){
+					printf("\n%d %d", v+1, vertex[v].adj[i]+1);
+					j++;
+				}
+			}
+			delete_vertex(vertex[v],0); // don't need the graph after kernel
 		}
 	}
 }

@@ -74,13 +74,13 @@ void parseinput(){
 //// out
 //////////////////////////////////////////////////////////////////////////
 void print_reduction_solution(){
-	printf("#STARTReductionSolution");
+	printf("\n#STARTReductionSolution");
 	for (int i = 0; i < total_amt_vertices; i++) {
 			if (vertex[i].used == 2) {
-				printf("#%d\n", i+1);
+				printf("\n#%d", i+1);
 			}
 		}
-	printf("#ENDReductionSolution");
+	printf("\n#ENDReductionSolution");
 }
 
 void print_solution_graph(unsigned int difference){

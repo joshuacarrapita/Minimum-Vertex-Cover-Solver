@@ -6,28 +6,25 @@ int main(void){
     //read input
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// prepare line reading
+	//prepare line reading
 	char* line = NULL;
 	size_t len = 0;
 
-    //skipp to our comments
-    char* our_solution_start = "#STARTReductionSolution\n";
-    do{
+    //skip to our comments
+    do {
         getline(&line, &len, stdin);
-    } while (strcmp(line, our_solution_start) != 0) ;
+    } while (strcmp(line, "#STARTReductionSolution\n") != 0) ;
 	getline(&line, &len, stdin);
 
-    //print every vertice, because were are not merging yet 
-    char *our_solution_end = "#ENDReductionSolution\n";
-    while(strcmp(line, our_solution_end) != 0){
+    //print every vertex, because were are not merging yet 
+    while(strcmp(line, "#ENDReductionSolution\n") != 0){
         if(line[0] != '\0') line++;
         printf("%s", line);
         getline(&line, &len, stdin);
     }
 
     //skip to heuristik solution
-    char *start_solution = "#StartSolution\n";
-    while(strcmp(line, start_solution) != 0) getline(&line, &len, stdin);
+    while(strcmp(line, "#StartSolution\n") != 0) getline(&line, &len, stdin);
 
     while(getline(&line, &len, stdin) != -1){
         printf("%s", line);

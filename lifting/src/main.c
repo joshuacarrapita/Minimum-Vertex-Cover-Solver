@@ -7,27 +7,25 @@ int main(void){
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 	//prepare line reading
-	char* line = NULL;
+	char* line = "";
 	size_t len = 0;
 
     //skip to our comments
-    do {
-        getline(&line, &len, stdin);
-    } while (strcmp(line, "#STARTReductionSolution\n") != 0) ;
+    while (strncmp(line, "#STARTReductionSolution", 23) != 0) getline(&line, &len, stdin);
+
+	//go to line after #STARTReduct...
 	getline(&line, &len, stdin);
 
     //print every vertex, because were are not merging yet 
-    while(strcmp(line, "#ENDReductionSolution\n") != 0){
+    while(strncmp(line, "#ENDReductionSolution", 21) != 0){
         if(line[0] != '\0') line++;
         printf("%s", line);
         getline(&line, &len, stdin);
     }
 
     //skip to heuristik solution
-    while(strcmp(line, "#StartSolution\n") != 0) getline(&line, &len, stdin);
+    while(strncmp(line, "#SolutionSize", 13) != 0) getline(&line, &len, stdin);
 
-    while(getline(&line, &len, stdin) != -1){
-        printf("%s", line);
-    }
+    while(getline(&line, &len, stdin) != -1) printf("%s", line);
     
 }

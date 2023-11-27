@@ -194,20 +194,10 @@ int main(int argc, char **argv){
     //// parse input and initialize everything
     //////////////////////////////////////////////////////////////////////////
 	initialize_globals();
-/*
-	char* line = NULL;
-	size_t len = 0;
-	getline(&line, &len, stdin);
 
- 	// ignore comment lines
-	while (line[0] == '#') getline(&line, &len, stdin);
 
-	// init total edge and vertex count
-	char *ptr = strtok(line, " ");
-	char *endptr;
-	total_amt_vertices = strtol(ptr,(char **) NULL , 10);
-	ptr = strtok(NULL, " ");
-	total_amt_edges = strtol(ptr, (char**) NULL, 10);*/
+
+
     //////////////////////////////////////////////////////////////////////////
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////

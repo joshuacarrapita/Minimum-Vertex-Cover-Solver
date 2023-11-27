@@ -6,4 +6,10 @@
  */
 void parseinput();
 
+void print_reduction_solution();
+
+void print_solution_graph(unsigned int difference);
+
+
 #endif
+

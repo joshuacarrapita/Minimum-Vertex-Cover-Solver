@@ -4,6 +4,6 @@
 /*
  * Parses stdin input into vertex array
  */
-void parseinput(){
+void parseinput();
 
 #endif

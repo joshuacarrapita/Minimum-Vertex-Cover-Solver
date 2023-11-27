@@ -1,6 +1,7 @@
-#ifndef VERTEXCOVER_STRUCT_H
-#define VERTEXCOVER_STRUCT_H
+#ifndef KERNEL_INCLUDE_MAIN_H
+#define KERNEL_INCLUDE_MAIN_H
 
+#include "graph.h"
 //global variables used in every file
 
 unsigned int total_amt_vertices; // number of vertices in the graph

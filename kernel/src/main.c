@@ -4,7 +4,7 @@
 #include <string.h>
 #include "main.h"
 #include "graph.h"
-#include "io.h"
+
 
 /*
  * calculates lower_bound as per lecture slides
@@ -157,32 +157,109 @@ bool vc_branch(int k){
     return false; 
 }
 
-void initialize_globals(){
-	maximum_degree = 0;
-
-	parseinput();
-
-	// alloc deletion_stack mem and init with standard content
-	deletion_stack = malloc(total_amt_vertices * sizeof(int));
-	for (int i = 0; i < total_amt_vertices; i++) deletion_stack[i] = -1;
-
-	/*
-	 * alloc degree_list array and init with content
-	 * -> set first elements of all degree lists to -1 (symbolises NULL)
-	 * -> add each vertex to its corresponding degree list
-	 */
-	degree_list = malloc(sizeof(Vertex) * (maximum_degree + 1));
-	for (int i = 0; i <= maximum_degree; i++) degree_list[i] = -1;
-	for (int i = 0; i < total_amt_vertices; i++) {
-		if(vertex[i].degree > 0) add_to_degree_list(i); // 0-list has no effect
-	}
-}
-
+/*
+ * INFO: Parse input and initialize everything, calculate solution, print solution
+ */
 int main(int argc, char **argv){
     //////////////////////////////////////////////////////////////////////////
-    //// prepare data structures
+    //// parse input and initialize everything
     //////////////////////////////////////////////////////////////////////////
-	initialize_globals();
+    char* line = NULL;
+    size_t len = 0;
+    getline(&line, &len, stdin);
+
+    while (line[0] == '#') getline(&line, &len, stdin); // ignore comment lines
+
+    // init edge and vertex count
+    char *ptr = strtok(line, " ");
+    total_amt_vertices = strtol(ptr, (char**) NULL, 10);
+    ptr = strtok(NULL, " ");
+    total_amt_edges = strtol(ptr, (char**) NULL, 10);
+
+	/*
+   	 * init all arrays and their pointers (we use static arrays so that they 
+	 * will be allocated in proximity to each other in memory and also because 
+	 * we can and dont have to worry about freeing memory, we still use
+	 * global pointers so we can easily reference the arrays contents from 
+	 * within functions)
+	 */
+    vertex = malloc(total_amt_vertices * sizeof(Vertex));
+    /*
+    int *adj_[total_amt_vertices];
+    adj = adj_;
+
+    char used_[total_amt_vertices];
+    used = used_;
+
+    unsigned int degree_[total_amt_vertices];
+    degree = degree_;
+
+    int degree_list_next_[total_amt_vertices];
+	int degree_list_prev_[total_amt_vertices];
+    degree_list_next = degree_list_next_;
+    degree_list_prev = degree_list_prev_;
+	*/
+    //int deletion_stack_[total_amt_vertices];
+    deletion_stack = malloc(total_amt_vertices * sizeof(int));
+
+	/*
+	 * initialisation of arrays contents with standard data where we can and
+	 * need to
+ 	 */
+    maximum_degree = 0;
+    for (int i = 0; i < total_amt_vertices; i++) {
+        vertex[i].adj = NULL;
+        vertex[i].used = 0;
+		deletion_stack[i] = -1; // not necessary but makes debugging easier
+        vertex[i].used = 0;
+        vertex[i].degree_list_prev = -1; // -1 symbolises NULL
+        vertex[i].degree_list_next = -1;
+    }
+
+	// parse edges to update vertex degrees and fill their adjacency lists
+    int counter_edges = 0;
+    while (counter_edges < total_amt_edges) {
+        getline(&line, &len, stdin);
+        if (line[0] != '#') { // skip comments
+							  
+            // get vertices v and w of edge
+            ptr = strtok(line, " ");
+            unsigned int v = (unsigned int) strtol(ptr, (char **) NULL, 10) - 1;
+            ptr = strtok(NULL, " ");
+            unsigned int w = (unsigned int) strtol(ptr, (char **) NULL, 10) - 1;
+
+            // increase degree for both
+            vertex[v].degree++;
+            vertex[w].degree++;
+
+            // add to each others adjacency lists
+            vertex[v].adj = realloc(vertex[v].adj, sizeof(int) * vertex[v].degree);
+            vertex[v].adj[vertex[v].degree - 1] = w;
+            vertex[w].adj = realloc(vertex[w].adj, sizeof(int) * vertex[w].degree);
+            vertex[w].adj[vertex[w].degree - 1] = v;
+
+			// update maximum_degree if necessary
+            if (vertex[v].degree > maximum_degree) {
+                maximum_degree = vertex[v].degree;
+			}
+            if (vertex[w].degree > maximum_degree) {
+                maximum_degree =vertex[w].degree;
+            }
+
+            counter_edges++;
+        }
+    }
+
+    // initialize degree_list array and its pointer
+    //int degree_list_[maximum_degree + 1]; // +1 because we have vertices with 0 adj
+    // malloc is safer!
+    degree_list = malloc(sizeof(Vertex) * (maximum_degree + 1));
+	// set first elements of all degree lists to -1 (symbolises NULL)
+    for (int i = 0; i <= maximum_degree; i++) degree_list[i] = -1;
+	// add each vertex to its corresponding degree list
+    for (int i = 0; i < total_amt_vertices; i++) {
+        if(vertex[i].degree > 0) add_to_degree_list(i);// 0-list has no effect
+    }
 
     //////////////////////////////////////////////////////////////////////////
     //// calculate solution 

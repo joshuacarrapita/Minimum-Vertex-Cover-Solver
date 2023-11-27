@@ -80,9 +80,9 @@ void print_reduction_solution(){
 	printf("#ENDReductionSolution");
 }
 
-void print_solution_graph(){
+void print_solution_graph(int difference){
 	// print header
-	printf("\n#difference: %d", total_amt_vertices-current_amt_vertices);
+	printf("\n#difference: %d",difference);
 	printf("\n%d", total_amt_vertices);
 	printf("\n%d", total_amt_edges);
 

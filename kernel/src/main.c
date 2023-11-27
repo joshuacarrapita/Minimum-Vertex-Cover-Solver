@@ -198,7 +198,7 @@ int main(int argc, char **argv){
     //////////////////////////////////////////////////////////////////////////
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
-	data_reduction();
+    int difference = data_reduction();
     /*stack_top = -1;//first reduction is never reversed
 				   
     unsigned int lower_bound = calc_lower_bound();
@@ -230,7 +230,7 @@ int main(int argc, char **argv){
     //////////////////////////////////////////////////////////////////////////
     //// print solution
     //////////////////////////////////////////////////////////////////////////
-	print_reduction_solution();
+	print_reduction_solution(difference);
     print_solution_graph();
 
     return 0;

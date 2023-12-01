@@ -11,28 +11,27 @@ int main(void){
 
 	//prepare line reading
 	char line[MAX]; 
-	char *s;
-	size_t len = 0;
+	char *line_ptr = line;
 
     //skip to our comments
-    while (strncmp(line, "#STARTReductionResult", 21) != 0 && s != NULL){
-		s = fgets(line, MAX, stdin);
+    while (strncmp(line, "#STARTReductionResult", 21) != 0 && line_ptr){
+		line_ptr = fgets(line, MAX, stdin);
 	}
 	//go to line after #STARTReduct...
-	s = fgets(line, MAX, stdin);
+	line_ptr = fgets(line, MAX, stdin);
 	while(strncmp(line, "#ENDReductionResult", 19) != 0){
-		char *printedline = &line;
+		char *printedline = line;
 		printedline++;
         printf("%s", printedline);
-		s = fgets(line, MAX, stdin);
+		line_ptr = fgets(line, MAX, stdin);
     }
 
     //skip to heuristik solution
     while(strncmp(line, "#SolutionSize", 13) != 0){
-		s = fgets(line, MAX, stdin);
+		line_ptr = fgets(line, MAX, stdin);
 	}
-    while(s != NULL){
-		s = fgets(line, MAX, stdin);
+    while(line_ptr){
+		line_ptr = fgets(line, MAX, stdin);
 		printf("%s", line);
    	} 
 }

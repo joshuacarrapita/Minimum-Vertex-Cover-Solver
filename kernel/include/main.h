@@ -16,6 +16,7 @@ extern unsigned int upper_bound;
 extern unsigned int highest_remaining_k;
 extern Vertex *vertex;
 
+#define MAX 100
 
 extern int maximum_degree; // holds the value for the highest degree found in the graph
 

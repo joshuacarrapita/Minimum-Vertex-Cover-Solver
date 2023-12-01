@@ -10,16 +10,16 @@
 //////////////////////////////////////////////////////////////////////////
 void parseinput(){
 	// prepare line reading
-	char* line = NULL;
-	size_t len = 0;
-	getline(&line, &len, stdin);
+	char line[MAX];
+	char *line_ptr = line;	
+
+	line_ptr = fgets(line, MAX, stdin);
 
  	// ignore comment lines
-	while (line[0] == '#') getline(&line, &len, stdin);
+	while (line[0] == '#' && line_ptr) line_ptr = fgets(line, MAX, stdin);
 
 	// init total edge and vertex count
 	char *ptr = strtok(line, " ");
-	char *endptr;
 	total_amt_vertices = strtol(ptr,(char **) NULL , 10);
 	ptr = strtok(NULL, " ");
 	total_amt_edges = strtol(ptr, (char**) NULL, 10);
@@ -36,8 +36,8 @@ void parseinput(){
 	// parse edges to update vertex degrees and fill their adjacency lists
 	int counter_edges = 0;
 	while (counter_edges < total_amt_edges) {
-		getline(&line, &len, stdin);
-		if (line[0] != '#') { // skip comments
+		line_ptr = fgets(line, MAX, stdin);
+		if (line[0] != '#' && line_ptr) { // skip comments
 							  
 			// get vertices v and w of edge
 			ptr = strtok(line, " ");

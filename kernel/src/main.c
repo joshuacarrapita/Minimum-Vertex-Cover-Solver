@@ -108,6 +108,24 @@ unsigned int data_reduction() {
             }
         }
     }
+	//domination-rule
+	for(int i = 2; i <= maximum_degree; i++){
+		int current_vertex = degree_list[i];
+		while(current_vertex != -1){
+			if(dominates(current_vertex)){
+				delete_vertex(current_vertex, 1);
+				found = 1;
+				k++;
+				break;
+			}else{
+				current_vertex = vertex[current_vertex].degree_list_next;
+			}
+		}
+		if(found) break;
+
+	}	
+
+
     return k;
 }
 

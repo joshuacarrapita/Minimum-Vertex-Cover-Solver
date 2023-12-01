@@ -50,6 +50,8 @@ void delete_vertex(unsigned int v, bool put_in_vc);
 
 void reverse_deletion(int stack_checkpoint);
 
+char dominates(unsigned int v);
+
 void sort(unsigned int v);
 
 #endif 

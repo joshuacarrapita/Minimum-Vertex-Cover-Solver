@@ -113,21 +113,25 @@ void reverse_deletion(int stack_checkpoint){
     }
 }
 
-char does_dominate(unsigned int v, unsigned int w){
-	if(vertex[w].degree < 2){
-		return 1;
-	}
-	int j = 0;
-	int covered = 0;
-	for(int i = 0; i < vertex[v].adj_size; i++){
-		if(vertex[v].adj[i] == vertex[w].adj[j] && vertex[vertex[v].adj[i]].used == 0 ){
-			j++;
-			if(vertex[vertex[w].adj[j]].used == 0 && vertex[w].adj[j] != v){
-				covered++;
+char dominates(unsigned int v){
+	for(int k = 0; k < vertex[v].adj_size; k++){
+		unsigned int w = vertex[v].adj[k];
+		if(vertex[w].used == 0 && vertex[v].degree >= vertex[w].degree){
+			if(vertex[w].degree < 2){
+				return 1;
 			}
-		}
-		if(covered = vertex[w].degree == covered){
-			return 1;
+			int j = 0;
+			int covered = 0;
+			for(int i = 0; i < vertex[v].adj_size; i++){
+				if(vertex[v].adj[i] == vertex[w].adj[j] && vertex[vertex[v].adj[i]].used == 0 ){
+					j++;
+					if(vertex[vertex[w].adj[j]].used == 0 && vertex[w].adj[j] != v){
+						covered++;
+					}
+				}
+				if(covered = vertex[w].degree == covered){
+					return 1;
+			}
 		}
 	}
 	return 0;

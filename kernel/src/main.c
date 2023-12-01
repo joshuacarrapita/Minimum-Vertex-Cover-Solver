@@ -56,7 +56,7 @@ unsigned int data_reduction() {
 
 		//degree 0 rule
 		if (maximum_degree == 0) { // In case there is only a degree 0 list
-			return 0;
+			return k;
 		}
 
 		//degree 1 rule
@@ -71,7 +71,9 @@ unsigned int data_reduction() {
 					k++;
 				}
 			}
+			found = true;
 		}
+		if (found) continue;
 
 		//degree 2-rule
 		if(maximum_degree >= 2){
@@ -132,7 +134,7 @@ unsigned int data_reduction() {
 			}
 			if (found) break;
 		}
-		if (!found) break;
+		if (!found) done = true;
 	}
     return k;
 }

@@ -9,7 +9,6 @@
 //// in
 //////////////////////////////////////////////////////////////////////////
 void parseinput(){
-
 	// prepare line reading
 	char* line = NULL;
 	size_t len = 0;
@@ -74,26 +73,26 @@ void parseinput(){
 //// out
 //////////////////////////////////////////////////////////////////////////
 void print_reduction_solution(){
-	printf("\n#STARTReductionSolution");
+	printf("#STARTReductionResult\n");
 	for (int i = 0; i < total_amt_vertices; i++) {
 			if (vertex[i].used == 2) {
 				printf("\n#%d", i+1);
 			}
 		}
-	printf("\n#ENDReductionSolution");
+	printf("#ENDReductionResult\n");
 }
 
 void print_solution_graph(unsigned int difference){
 	// print header
-	printf("\n#difference: %d", difference);
-	printf("\n%d %d", current_amt_vertices,current_amt_edges);
+	printf("# difference: %d\n", difference);
+	printf("%d %d\n", current_amt_vertices,current_amt_edges);
 
 	// print edges
 	for (int v = 0; v < total_amt_vertices; v++) {
         if (vertex[v].used == 0) {
 			for (int i = 0, j = 0; j < vertex[v].degree; i++) {
 				if(vertex[vertex[v].adj[i]].used == 0){
-					printf("\n%d %d", v+1, vertex[v].adj[i]+1);
+					printf("%d %d\n", v+1, vertex[v].adj[i]+1);
 					j++;
 				}
 			}

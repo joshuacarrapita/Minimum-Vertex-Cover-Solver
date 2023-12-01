@@ -112,3 +112,33 @@ void reverse_deletion(int stack_checkpoint){
         stack_top--;
     }
 }
+
+void insertion_sort(unsigned int v, int left, int right){
+	for (int i = left + 1; i <= right; i++) { 
+        unsigned int temp = vertex[v].adj[i]; 
+        int j = i - 1; 
+        while (j >= left && vertex[v].adj[j] > temp) { 
+            vertex[v].adj[j + 1] = vertex[v].adj[j]; 
+            j--; 
+        } 
+        vertex[v].adj[j + 1] = temp; 
+    } 	
+}
+
+void sort(unsigned int v){
+	//int min_array_size = 42;
+	//break array into subarrays of size 42 and sort them via insertionsort
+	for(int i = 0; i < vertex[v].adj_size; i += min_array_size){
+		int right = vertex[v].adj_size;
+		//if(i < right) rightborder = i;
+
+		insertion_sort(v, i, right);
+	}
+
+	//for(int i = min_array_size; i < j
+	//mergesort abondend, does it really make a difference when array size is under 100 ? 
+
+
+
+
+}	

@@ -185,16 +185,18 @@ void initialize_globals(){
 	degree_list = malloc(sizeof(Vertex) * (maximum_degree + 1));
 	for (int i = 0; i <= maximum_degree; i++) degree_list[i] = -1;
 	for (int i = 0; i < total_amt_vertices; i++) {
+		vertex[i].adj_size = vertex[i].degree;
 		if(vertex[i].degree > 0) add_to_degree_list(i); // 0-list has no effect
+		if(vertex[i].degree > 1) sort(i);
 	}
 }
 
-int main(int argc, char **argv){
+int main(void){
     //////////////////////////////////////////////////////////////////////////
     //// parse input and initialize everything
     //////////////////////////////////////////////////////////////////////////
 	initialize_globals();
-
+	printf("maximum_degree = %d", maximum_degree);
     //////////////////////////////////////////////////////////////////////////
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////

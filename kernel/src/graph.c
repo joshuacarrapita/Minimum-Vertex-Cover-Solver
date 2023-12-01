@@ -30,7 +30,6 @@ void remove_from_degree_list(unsigned int v){
     vertex[v].degree_list_prev = -1;
 }
 
-
 void delete_vertex(unsigned int v, bool put_in_vc){
 	// add v to deletion stack
 	stack_top++;
@@ -75,7 +74,6 @@ void delete_vertex(unsigned int v, bool put_in_vc){
         }
     }
 }
-
 
 void reverse_deletion(int stack_checkpoint){
 	// as long as we didn't revert back to the desired state
@@ -131,6 +129,7 @@ char dominates(unsigned int v){
 				}
 				if(covered = vertex[w].degree == covered){
 					return 1;
+				}
 			}
 		}
 	}
@@ -161,8 +160,5 @@ void sort(unsigned int v){
 
 	//for(int i = min_array_size; i < j
 	//mergesort abondend, does it really make a difference when array size is under 100 ? 
-
-
-
-
 }	
+

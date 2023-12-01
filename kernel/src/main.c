@@ -47,85 +47,93 @@ unsigned int calc_upper_bound(){
 
 unsigned int data_reduction() {
     //TODO: more reduction rules
-
-    //degree 1 rule
-    if (maximum_degree == 0) { // In case there is only a degree 0 list
-		return 0;
-    }
+	bool done = false;
+	bool found = false;
     unsigned int k = 0;
 
-    //degree 2-rule
-    if(maximum_degree >= 2){
-        unsigned int v = degree_list[2];
-        while(v != -1){
-            //get the two neighbors
-            unsigned int neighbors[2];
-            for(int i = 0, j = 0; j < 2; i++){
-                unsigned int w = vertex[v].adj[i];
-                if(vertex[w].used == 0){
-                    neighbors[j] = w;
-                    j++;
-                }
-            }
-            //get the one with lower degree
-            int x = 0;
-            if(vertex[neighbors[1]].degree < vertex[neighbors[0]].degree) x = 1;
+	while(!done){
+		found = false;
 
-            //check if they are adjacent
-            char are_adj = 0;
-            for(int i = 0, j = 0; j < vertex[neighbors[x]].degree; i++){
-                unsigned int w = vertex[neighbors[x]].adj[i];
-                if(vertex[w].used == 0){
-                    if(w == neighbors[(x +1)%2]){
-                        are_adj = 1;
-                        break;
-                    }
-                    j++;
-                }
-            }
-            if(are_adj){ //triangle rule
-                delete_vertex(v, 0);
-                delete_vertex(neighbors[0], 1);
-                delete_vertex(neighbors[1], 1);
-                k += 2;
-                v = degree_list[2];
-            }else{//TODO: forward deg-2 rule, substancially more work required
-                unsigned int next = vertex[v].degree_list_next;
-                v = next;
-            }
-        }
-    }
+		//degree 0 rule
+		if (maximum_degree == 0) { // In case there is only a degree 0 list
+			return 0;
+		}
 
-    while (degree_list[1] != -1) {
-        unsigned int v = degree_list[1];
-        for (int i = 0, j = 0; j < 1; i++) {
-            int w = vertex[v].adj[i];
-            if (vertex[w].used == 0) {
-                delete_vertex(v, 0);
-                delete_vertex(w, 1);
-                j++;
-                k++;
-            }
-        }
-    }
-	//domination-rule
-	for(int i = 2; i <= maximum_degree; i++){
-		int current_vertex = degree_list[i];
-		while(current_vertex != -1){
-			if(dominates(current_vertex)){
-				delete_vertex(current_vertex, 1);
-				found = 1;
-				k++;
-				break;
-			}else{
-				current_vertex = vertex[current_vertex].degree_list_next;
+		//degree 1 rule
+		while (degree_list[1] != -1) {
+			unsigned int v = degree_list[1];
+			for (int i = 0, j = 0; j < 1; i++) {
+				int w = vertex[v].adj[i];
+				if (vertex[w].used == 0) {
+					delete_vertex(v, 0);
+					delete_vertex(w, 1);
+					j++;
+					k++;
+				}
 			}
 		}
-		if(found) break;
 
-	}	
+		//degree 2-rule
+		if(maximum_degree >= 2){
+			unsigned int v = degree_list[2];
+			while(v != -1 && !found){
+				//get the two neighbors
+				unsigned int neighbors[2];
+				for(int i = 0, j = 0; j < 2; i++){
+					unsigned int w = vertex[v].adj[i];
+					if(vertex[w].used == 0){
+						neighbors[j] = w;
+						j++;
+					}
+				}
+				//get the one with lower degree
+				int x = 0;
+				if(vertex[neighbors[1]].degree < vertex[neighbors[0]].degree) x = 1;
 
+				//check if they are adjacent
+				char are_adj = 0;
+				for(int i = 0, j = 0; j < vertex[neighbors[x]].degree; i++){
+					unsigned int w = vertex[neighbors[x]].adj[i];
+					if(vertex[w].used == 0){
+						if(w == neighbors[(x +1)%2]){
+							are_adj = 1;
+							break;
+						}
+						j++;
+					}
+				}
+				if(are_adj){ //triangle rule
+					delete_vertex(v, 0);
+					delete_vertex(neighbors[0], 1);
+					delete_vertex(neighbors[1], 1);
+					k += 2;
+					v = degree_list[2];
+					found = true;
+				} else {//TODO: forward deg-2 rule, substancially more work required
+					unsigned int next = vertex[v].degree_list_next;
+					v = next;
+				}
+			}
+		}
+		if (found) continue;
 
+		//domination-rule
+		for(int i = 2; i <= maximum_degree; i++){
+			int current_vertex = degree_list[i];
+			while(current_vertex != -1){
+				if(dominates(current_vertex)){
+					delete_vertex(current_vertex, 1);
+					found = 1;
+					k++;
+					break;
+				}else{
+					current_vertex = vertex[current_vertex].degree_list_next;
+				}
+			}
+			if (found) break;
+		}
+		if (!found) break;
+	}
     return k;
 }
 
@@ -214,7 +222,7 @@ int main(void){
     //// parse input and initialize everything
     //////////////////////////////////////////////////////////////////////////
 	initialize_globals();
-	printf("maximum_degree = %d", maximum_degree);
+
     //////////////////////////////////////////////////////////////////////////
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////

@@ -100,4 +100,5 @@ void print_solution_graph(unsigned int difference){
 			delete_vertex( v, 0); // don't need the graph after kernel
 		}
 	}
+	printf("\n");
 }

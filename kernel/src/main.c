@@ -235,6 +235,5 @@ int main(int argc, char **argv){
 
     print_solution_graph(difference);
 
-
     return 0;
 }

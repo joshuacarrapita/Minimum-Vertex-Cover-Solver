@@ -46,6 +46,7 @@ void delete_vertex(unsigned int v, bool put_in_vc){
 	remove_from_degree_list(v);
 	current_amt_edges -= vertex[v].degree;
 	current_amt_vertices -= 1;
+
     // check if v was max_degree, unless v had degree 0 (occurs in instance 2 1 \n 1 2)
     if(maximum_degree > 0 && vertex[v].degree == maximum_degree && degree_list[maximum_degree] == -1){
         // find new max degree
@@ -137,7 +138,7 @@ char dominates(unsigned int v){
 }	
 
 void insertion_sort(unsigned int v, int left, int right){
-	for (int i = left + 1; i <= right; i++) { 
+	for (int i = left + 1; i < right; i++) { 
         unsigned int temp = vertex[v].adj[i]; 
         int j = i - 1; 
         while (j >= left && vertex[v].adj[j] > temp) { 
@@ -154,8 +155,7 @@ void sort(unsigned int v){
 	//for(int i = 0; i < vertex[v].adj_size; i += min_array_size){
 		int right = vertex[v].adj_size;
 		//if(i < right) rightborder = i;
-
-		insertion_sort(v, 0, right);
+		insertion_sort(v,0,right);
 	//}
 
 	//for(int i = min_array_size; i < j

@@ -29,6 +29,7 @@ void parseinput(){
 	for (int i = 0; i < total_amt_vertices; i++) {
 		vertex[i].adj = NULL;
 		vertex[i].used = 0;
+		vertex[i].degree = 0;
 		vertex[i].degree_list_prev = -1; // -1 symbolises NULL
 		vertex[i].degree_list_next = -1;
 	}

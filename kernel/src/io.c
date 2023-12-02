@@ -91,15 +91,17 @@ void print_solution_graph(unsigned int difference){
 	printf("%d %d\n", current_amt_vertices,current_amt_edges);
 
 	// print edges
-	for (int v = 0; v < total_amt_vertices; v++) {
-        if (vertex[v].used == 0) {
-			for (int i = 0, j = 0; j < vertex[v].degree; i++) {
-				if(vertex[vertex[v].adj[i]].used == 0){
-					printf("%d %d\n", v+1, vertex[v].adj[i]+1);
-					j++;
+	if(current_amt_vertices != 0 && current_amt_edges != 0){
+		for (int v = 0; v < total_amt_vertices; v++) {
+			if (vertex[v].used == 0) {
+				for (int i = 0, j = 0; j < vertex[v].degree; i++) {
+					if( vertex[vertex[v].adj[i]].used == 0){
+						printf("%d %d\n", v+1, vertex[v].adj[i]+1);
+						j++;
+					}
 				}
+				delete_vertex( v, 0); // don't need the graph after kernel
 			}
-			delete_vertex( v, 0); // don't need the graph after kernel
 		}
 	}
 	printf("\n");

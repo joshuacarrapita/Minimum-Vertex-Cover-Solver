@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "main.h"
 #include "graph.h"
 #include "io.h"
@@ -24,6 +25,9 @@ int *degree_list;
 int *deletion_stack;
 
 int stack_top = -1; // index of the "topmost" / "most recently added" stack entry
+
+time_t start_time;
+bool timeout;
 
 unsigned int calc_lower_bound(){
     unsigned int result = 0;
@@ -53,12 +57,10 @@ unsigned int data_reduction() {
 
 	while(!done){
 		found = false;
-
-		//degree 0 rule
+		//degree 0 rule 
 		if (maximum_degree == 0) { // In case there is only a degree 0 list
 			return k;
 		}
-
 		//degree 1 rule
 		while (degree_list[1] != -1) {
 			unsigned int v = degree_list[1];
@@ -73,6 +75,14 @@ unsigned int data_reduction() {
 			}
 			found = true;
 		}
+
+		//stop if not enough time.. 
+		time_t current_time = time(NULL);
+		if(current_time - start_time > 115) {
+			timeout = true;
+			return k;
+		}
+
 		if (found) continue;
 
 		//degree 2-rule
@@ -124,7 +134,6 @@ unsigned int data_reduction() {
 			int current_vertex = degree_list[i];
 			while(current_vertex != -1){
 				if(is_dominated(current_vertex)){
-					//printf("found one with dominating rule");
 					found = 1;
 					k++;
 					break;
@@ -140,6 +149,15 @@ unsigned int data_reduction() {
 }
 
 bool vc_branch(int k){
+	if(timeout){
+		return false;	
+	}else{	
+		time_t current_time = time(NULL);
+		if(current_time - start_time > 115){
+			timeout = true;
+			return false;
+		}
+	}
     //TODO: reduce data
     k -= data_reduction();
     if (k < 0) { // Recursion hook, no vertex cover was found
@@ -163,7 +181,9 @@ bool vc_branch(int k){
 	if (vc_branch(k - 1)) {
         return true; // it makes a vertex cover of size k with our deleted one
     }
+	
 
+	if(timeout ) return false;
 	//no solution of size k with v
     reverse_deletion(stack_checkpoint);
     int degree_v = vertex[v].degree;//need the current degree, because after deleting the neighborhood deg[v] = 0
@@ -199,7 +219,6 @@ void initialize_globals(){
 	parseinput();
 
 	current_amt_edges = total_amt_edges;
-	current_amt_vertices = total_amt_vertices;
 
 	// alloc deletion_stack mem and init with standard content
 	deletion_stack = malloc(total_amt_vertices * sizeof(int));
@@ -210,16 +229,23 @@ void initialize_globals(){
 	 * -> set first elements of all degree lists to -1 (symbolises NULL)
 	 * -> add each vertex to its corresponding degree list
 	 */
-	degree_list = malloc(sizeof(Vertex) * (maximum_degree + 1));
+	degree_list = malloc(sizeof(int) * (maximum_degree + 1));
 	for (int i = 0; i <= maximum_degree; i++) degree_list[i] = -1;
 	for (int i = 0; i < total_amt_vertices; i++) {
 		vertex[i].adj_size = vertex[i].degree;
-		if(vertex[i].degree > 0) add_to_degree_list(i); // 0-list has no effect
+		if(vertex[i].degree > 0){
+			add_to_degree_list(i); // 0-list has no effect
+			current_amt_vertices++;
+		}
 		if(vertex[i].degree > 1) sort(i);
 	}
 }
 
 int main(void){
+	//start timer
+	timeout = false;
+	start_time = time(NULL);	
+	
     //////////////////////////////////////////////////////////////////////////
     //// parse input and initialize everything
     //////////////////////////////////////////////////////////////////////////
@@ -229,23 +255,23 @@ int main(void){
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
     unsigned int difference = data_reduction();
+    stack_top = -1;//first reduction is never reversed
 
-    /*stack_top = -1;//first reduction is never reversed
-				   
     unsigned int lower_bound = calc_lower_bound();
     upper_bound = calc_upper_bound();
-
+	//timeout = true;	
 	
-	if (lower_bound < upper_bound) { 
-		 *
+	if (lower_bound < upper_bound && !timeout) { 
+		/*
 		 * search for lowest vertex_cover of size k
 		 * on if l_b < u_b we can still search, if we get into the while body
 		 * again and they are equal, we need to do the last iteration to set
 		 * the used's right
-		 *
+		 */
 		int k = lower_bound + (upper_bound-lower_bound)/2;
-		while (lower_bound != upper_bound){
+		while (!timeout && lower_bound != upper_bound){
 			reverse_deletion(-1);
+		
 			if(vc_branch(k)) {
 				upper_bound = k - highest_remaining_k;
 			} else {
@@ -256,13 +282,15 @@ int main(void){
 		reverse_deletion(-1);
 		vc_branch(lower_bound);
 	}
-	*/
 
     //////////////////////////////////////////////////////////////////////////
     //// print solution
     //////////////////////////////////////////////////////////////////////////
+	if(!timeout){
+		difference += lower_bound;	
+	}
+	if(current_amt_edges == 0) current_amt_vertices = 0;
 	print_reduction_solution();
-
     print_solution_graph(difference);
 
     return 0;

@@ -69,6 +69,7 @@ void delete_vertex(unsigned int v, bool put_in_vc){
 				maximum_degree--;
 			}
 			vertex[w].degree--;
+			vertex[w].modified = 1;
 
 			add_to_degree_list(w);
             j++;
@@ -100,6 +101,7 @@ void reverse_deletion(int stack_checkpoint){
                 //increase degree and add to correct list
 				remove_from_degree_list(w);
 				vertex[w].degree++;
+				vertex[w].modified = 1;
 				add_to_degree_list(w);
                 j++;
                 //check if w has maximum_degree
@@ -112,28 +114,42 @@ void reverse_deletion(int stack_checkpoint){
     }
 }
 
-char dominates(unsigned int v){
+char is_dominated(unsigned int v){
+	if(!vertex[v].modified){
+		return 0; //if it has not been modified it cant suddenly be dominated
+	}
 	for(int k = 0; k < vertex[v].adj_size; k++){
 		unsigned int w = vertex[v].adj[k];
-		if(vertex[w].used == 0 && vertex[v].degree >= vertex[w].degree){
-			if(vertex[w].degree < 2){
-				return 1;
-			}
+
+		if(vertex[w].used == 0 && vertex[w].degree >= vertex[v].degree){
 			int j = 0;
+			int i = 0;
 			int covered = 0;
-			for(int i = 0; i < vertex[v].adj_size; i++){
-				if(vertex[v].adj[i] == vertex[w].adj[j] && vertex[vertex[v].adj[i]].used == 0 ){
+			while(j < vertex[w].adj_size && i < vertex[v].adj_size){
+				if(vertex[vertex[v].adj[i]].used != 0 || vertex[v].adj[i] == w){//skip deleted verteces v or vertex w			
+					i++;
+					continue; 
+				}
+				if(vertex[vertex[w].adj[j]].used != 0 || vertex[w].adj[j] == v){//skip deleted verteces w or vertex v			
+					j++; 
+					continue;
+				}		 
+				if(vertex[v].adj[i] == vertex[w].adj[j]){
+					covered++;
+					i++;
 					j++;
-					if(vertex[vertex[w].adj[j]].used == 0 && vertex[w].adj[j] != v){
-						covered++;
-					}
+				}else{
+					j++;
 				}
-				if(covered = vertex[w].degree == covered){
-					return 1;
-				}
+			}
+
+			if(vertex[v].degree == covered + 1){
+				delete_vertex(w, 1);
+				return 1;
 			}
 		}
 	}
+	vertex[v].modified = 0; //if w is not modified we dont have to check again
 	return 0;
 }	
 

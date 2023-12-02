@@ -123,8 +123,8 @@ unsigned int data_reduction() {
 		for(int i = 2; i <= maximum_degree; i++){
 			int current_vertex = degree_list[i];
 			while(current_vertex != -1){
-				if(dominates(current_vertex)){
-					delete_vertex(current_vertex, 1);
+				if(is_dominated(current_vertex)){
+					//printf("found one with dominating rule");
 					found = 1;
 					k++;
 					break;

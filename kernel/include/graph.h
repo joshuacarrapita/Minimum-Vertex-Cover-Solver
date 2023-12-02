@@ -5,6 +5,7 @@ typedef struct Vertex{
     int *adj; //adjency list of vertex
 	int adj_size; //currentsize of adj aray
     char used;//is vertex untouched(0), deleted(1) or in vc (2)
+	char modified; //is vertex modified by last reduction
     unsigned int degree; //the current degree of vertex
     unsigned int degree_list_prev;//pointer to prev element in degree_list
     unsigned int degree_list_next;//pointer to next element in degree_list
@@ -50,7 +51,7 @@ void delete_vertex(unsigned int v, bool put_in_vc);
 
 void reverse_deletion(int stack_checkpoint);
 
-char dominates(unsigned int v);
+char is_dominated(unsigned int w);
 
 void sort(unsigned int v);
 

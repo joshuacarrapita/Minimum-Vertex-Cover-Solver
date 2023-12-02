@@ -30,6 +30,7 @@ void parseinput(){
 		vertex[i].adj = NULL;
 		vertex[i].adj_size = 0;
 		vertex[i].used = 0;
+		vertex[i].modified = 1;
 		vertex[i].degree = 0;
 		vertex[i].degree_list_prev = -1; // -1 symbolises NULL
 		vertex[i].degree_list_next = -1;

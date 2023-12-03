@@ -40,6 +40,9 @@ extern int *degree_list;
 extern int *deletion_stack;
 
 extern int stack_top; // index of the "topmost" / "most recently added" stack entry
+					  
+extern Merge **merge_stack;
+extern int merge_stack_top;
 
 //////////////////////////////////////////////////////////////////////////
 //// functions

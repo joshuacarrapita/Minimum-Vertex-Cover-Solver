@@ -11,6 +11,13 @@ typedef struct Vertex{
     unsigned int degree_list_next;//pointer to next element in degree_list
 }Vertex;
 
+typedef struct  Merge{
+	unsigned int merge_into;
+	unsigned int other;
+	unsigned int triggerer;
+	int *old_adj;
+}Merge;
+
 //all functions with info
 
 /*
@@ -54,5 +61,9 @@ void reverse_deletion(int stack_checkpoint);
 int is_dominated(unsigned int w);
 
 void sort(unsigned int v);
+
+void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int triggerer);
+
+
 
 #endif 

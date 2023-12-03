@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include "main.h"
 #include "graph.h"
 
@@ -176,4 +177,117 @@ void sort(unsigned int v){
 	//for(int i = min_array_size; i < j
 	//mergesort abondend, does it really make a difference when array size is under 100 ? 
 }	
+
+
+void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int triggerer){
+	//decrease current_amt_edgesy
+	current_amt_edges -= (vertex[merge_into].degree + vertex[other].degree + 2);
+	
+	//copy old adj list
+	int *old_adj = vertex[merge_into].adj;
+
+	//TODO: make new adj_list
+	int *new_adj = (int *) malloc(sizeof(int)*(vertex[merge_into].degree + vertex[other].degree -2));
+	int i = 0, j = 0, new_index = 0;
+
+	while(i < vertex[merge_into].adj_size && j < vertex[other].adj_size){
+
+		unsigned int v = vertex[merge_into].adj[i];
+		unsigned int w = vertex[other].adj[j];
+
+		if(v == triggerer || vertex[v].used != 0){ //skipp deleted vertices or if trigerrer 
+			i++;	
+			continue;
+		}
+		if(w == triggerer || vertex[w].used != 0){
+			j++;	
+			continue;
+		}
+		if(v <= w ){
+			new_adj[new_index] = v;
+			i++;
+			new_index++;
+			if(v == w){
+				remove_from_degree_list(v);
+				vertex[v].degree--;
+				add_to_degree_list(v);
+				j++;
+			}	
+		}else{
+			new_adj[new_index] = w;
+
+			vertex[w].adj_size++;	
+			vertex[w].adj = realloc(vertex[w].adj, sizeof(int) * vertex[w].adj_size);
+			vertex[w].adj[vertex[w].adj_size -1] = merge_into;
+			sort(w);		
+
+			j++;	
+			new_index++;
+		}	
+
+	}	
+	
+	while(i < vertex[merge_into].adj_size){
+		unsigned int v = vertex[merge_into].adj[i];
+		if(vertex[v].used == 0){
+			new_adj[new_index] = v;
+			new_index++;
+		}
+		i++;
+	}
+
+	while(j < vertex[other].adj_size){
+		unsigned int w = vertex[other].adj[j];
+		if(vertex[w].used == 0){
+			new_adj[new_index] = w;
+
+			vertex[w].adj_size++;	
+			vertex[w].adj = realloc(vertex[w].adj, sizeof(int) * vertex[w].adj_size);
+			vertex[w].adj[vertex[w].adj_size -1] = merge_into;
+			sort(w);		
+
+			new_index++;
+		}	
+
+		j++;	
+	}
+	if(new_index > vertex[merge_into].degree + vertex[other].degree -2) printf(" is bigger\n");
+	
+	new_adj = realloc(new_adj, sizeof(int) * new_index);
+	remove_from_degree_list(merge_into);
+	vertex[merge_into].degree = new_index;
+	vertex[merge_into].adj_size = new_index;
+	add_to_degree_list(merge_into);
+
+	vertex[merge_into].adj = new_adj;
+	sort(merge_into);	
+
+	// make new Merge instance
+	Merge *merge = (Merge *) malloc(sizeof(Merge));
+	merge->merge_into = merge_into;
+	merge->other = other;
+	merge->triggerer = triggerer;
+	merge->old_adj = old_adj;
+	
+	//put new Merge instance into merge_stack and into deletion_stack
+	merge_stack_top++;
+	merge_stack[merge_stack_top] = merge;
+
+	//stack_top++; //without this at first and only merge in first reduction
+	//deletion_stack[stack_top] = -1;
+
+	//deleted other vertices 
+	vertex[other].used = 1;
+	remove_from_degree_list(other);
+
+	vertex[triggerer].used = 1;
+	remove_from_degree_list(triggerer);
+
+	//update edges and vertices
+	current_amt_vertices -= 2;
+
+	current_amt_edges += new_index;
+}	
+
+
 

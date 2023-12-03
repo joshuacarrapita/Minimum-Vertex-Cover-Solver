@@ -23,8 +23,10 @@ int maximum_degree; // holds the value for the highest degree found in the graph
 int *degree_list; 
 
 int *deletion_stack;
-
 int stack_top = -1; // index of the "topmost" / "most recently added" stack entry
+				
+Merge **merge_stack;
+int merge_stack_top = -1;
 
 time_t start_time;
 bool timeout;
@@ -121,7 +123,12 @@ unsigned int data_reduction() {
 					k += 2;
 					v = degree_list[2];
 					found = true;
-				} else {//TODO: forward deg-2 rule, substancially more work required
+				} else {
+					//TODO: forward deg-2 rule, substancially more work required
+
+					merge_vertices(neighbors[(x +1)% 2], neighbors[x], v);	
+					found = true;
+					k++;
 					unsigned int next = vertex[v].degree_list_next;
 					v = next;
 				}
@@ -226,7 +233,8 @@ void initialize_globals(){
 	// alloc deletion_stack mem and init with standard content
 	deletion_stack = malloc(total_amt_vertices * sizeof(int));
 	for (int i = 0; i < total_amt_vertices; i++) deletion_stack[i] = -1;
-
+	
+	merge_stack = malloc(total_amt_vertices * sizeof(Merge *));
 	/*
 	 * alloc degree_list array and init with content
 	 * -> set first elements of all degree lists to -1 (symbolises NULL)
@@ -257,9 +265,9 @@ int main(void){
     //////////////////////////////////////////////////////////////////////////
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
-    unsigned int difference = data_reduction();
+    unsigned int difference = data_reduction(true);
 
-
+	timeout = true;
 	if(!timeout){
 		stack_top = -1;//first reduction is never reversed
 		unsigned int lower_bound = calc_lower_bound();

@@ -133,7 +133,9 @@ unsigned int data_reduction() {
 		for(int i = 2; i <= maximum_degree; i++){
 			int current_vertex = degree_list[i];
 			while(current_vertex != -1){
-				if(is_dominated(current_vertex)){
+				int dominator = is_dominated(current_vertex);
+				if(dominator > -1){
+					delete_vertex(dominator, 1);
 					found = 1;
 					k++;
 					break;

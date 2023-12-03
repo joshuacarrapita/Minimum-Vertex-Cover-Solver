@@ -114,9 +114,9 @@ void reverse_deletion(int stack_checkpoint){
     }
 }
 
-char is_dominated(unsigned int v){
+int is_dominated(unsigned int v){
 	if(!vertex[v].modified){
-		return 0; //if it has not been modified it cant suddenly be dominated
+		return -1; //if it has not been modified it cant suddenly be dominated
 	}
 	for(int k = 0; k < vertex[v].adj_size; k++){
 		unsigned int w = vertex[v].adj[k];
@@ -144,13 +144,12 @@ char is_dominated(unsigned int v){
 			}
 
 			if(vertex[v].degree == covered + 1){
-				delete_vertex(w, 1);
-				return 1;
+				return w;
 			}
 		}
 	}
 	vertex[v].modified = 0; //if w is not modified we dont have to check again
-	return 0;
+	return -1;
 }	
 
 void insertion_sort(unsigned int v, int left, int right){

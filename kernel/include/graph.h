@@ -51,7 +51,7 @@ void delete_vertex(unsigned int v, bool put_in_vc);
 
 void reverse_deletion(int stack_checkpoint);
 
-char is_dominated(unsigned int w);
+int is_dominated(unsigned int w);
 
 void sort(unsigned int v);
 

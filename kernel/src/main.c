@@ -221,6 +221,7 @@ void initialize_globals(){
 	parseinput();
 
 	current_amt_edges = total_amt_edges;
+	current_amt_vertices = 0;
 
 	// alloc deletion_stack mem and init with standard content
 	deletion_stack = malloc(total_amt_vertices * sizeof(int));

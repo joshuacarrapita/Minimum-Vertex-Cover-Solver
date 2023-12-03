@@ -91,7 +91,7 @@ void print_solution_graph(unsigned int difference){
 	printf("%d %d\n", current_amt_vertices,current_amt_edges);
 
 	// print edges
-	if(current_amt_vertices != 0 && current_amt_edges != 0){
+	if(current_amt_edges != 0){
 		for (int v = 0; v < total_amt_vertices; v++) {
 			if (vertex[v].used == 0) {
 				for (int i = 0, j = 0; j < vertex[v].degree; i++) {

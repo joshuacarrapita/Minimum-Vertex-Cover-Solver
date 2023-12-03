@@ -78,7 +78,7 @@ unsigned int data_reduction() {
 
 		//stop if not enough time.. 
 		time_t current_time = time(NULL);
-		if(current_time - start_time > 115) {
+		if(current_time - start_time > 117) {
 			timeout = true;
 			return k;
 		}
@@ -153,7 +153,7 @@ bool vc_branch(int k){
 		return false;	
 	}else{	
 		time_t current_time = time(NULL);
-		if(current_time - start_time > 115){
+		if(current_time - start_time > 117){
 			timeout = true;
 			return false;
 		}
@@ -255,43 +255,42 @@ int main(void){
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
     unsigned int difference = data_reduction();
-    stack_top = -1;//first reduction is never reversed
 
-    unsigned int lower_bound = calc_lower_bound();
-    upper_bound = calc_upper_bound();
-	//timeout = true;	
-	
-	if (lower_bound < upper_bound && !timeout) { 
-		/*
-		 * search for lowest vertex_cover of size k
-		 * on if l_b < u_b we can still search, if we get into the while body
-		 * again and they are equal, we need to do the last iteration to set
-		 * the used's right
-		 */
-		int k = lower_bound + (upper_bound-lower_bound)/2;
-		while (!timeout && lower_bound != upper_bound){
-			reverse_deletion(-1);
+
+	if(!timeout){
+		stack_top = -1;//first reduction is never reversed
+		unsigned int lower_bound = calc_lower_bound();
+		upper_bound = calc_upper_bound();
 		
-			if(vc_branch(k)) {
-				upper_bound = k - highest_remaining_k;
-			} else {
-				lower_bound = k+1;
+		if (lower_bound < upper_bound ) { 
+			/*
+			 * search for lowest vertex_cover of size k
+			 * on if l_b < u_b we can still search, if we get into the while body
+			 * again and they are equal, we need to do the last iteration to set
+			 * the used's right
+			 */
+			int k = lower_bound + (upper_bound-lower_bound)/2;
+			while (!timeout && lower_bound != upper_bound){
+				reverse_deletion(-1);
+			
+				if(vc_branch(k)) {
+					upper_bound = k - highest_remaining_k;
+				} else {
+					lower_bound = k+1;
+				}
+				k = lower_bound + (upper_bound-lower_bound)/2;
 			}
-			k = lower_bound + (upper_bound-lower_bound)/2;
+			reverse_deletion(-1);
+			vc_branch(lower_bound);
 		}
-		reverse_deletion(-1);
-		vc_branch(lower_bound);
+		if(!timeout) difference += lower_bound;
 	}
-
     //////////////////////////////////////////////////////////////////////////
     //// print solution
     //////////////////////////////////////////////////////////////////////////
-	if(!timeout){
-		difference += lower_bound;	
-	}
 	if(current_amt_edges == 0) current_amt_vertices = 0;
-	print_reduction_solution();
-    print_solution_graph(difference);
-
+	//print_reduction_solution();
+    //print_solution_graph(difference);
+	
     return 0;
 }

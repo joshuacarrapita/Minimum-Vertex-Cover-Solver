@@ -46,7 +46,7 @@ int main(void){
 	//set in_vc according to reduction results
 	while(strncmp(line, "#ENDReductionResult", 19) != 0){
 		line_ptr++; //skip '#'
-		in_vc[(unsigned int) strtol(line_ptr, (char **) NULL, 10)] = 1;
+		in_vc[(unsigned int) strtol(line_ptr, (char **) NULL, 10)-1] = 1;
 		line_ptr = fgets(line, MAX, stdin);
     }
 
@@ -60,7 +60,7 @@ int main(void){
 	line_ptr++; //skip '#'
 	unsigned int total_amt_merges = (unsigned int) strtol(line_ptr, (char **) NULL, 10);
 	int** merge_history_list  = (int **) calloc(total_amt_merges,sizeof(int*));
-	memcheck(merge_history_list);
+	if (total_amt_merges) memcheck(merge_history_list);
 	line_ptr = fgets(line, MAX, stdin);
 	for (int i = 0; i < total_amt_merges; i++) {
 		line_ptr++; //skip '#'
@@ -70,7 +70,7 @@ int main(void){
 		int token_count = 1;
 		while(token) {
 			memcheck(merge = realloc(merge,token_count*sizeof(int)));
-			merge[token_count-1] = (unsigned int) strtol(token, (char **) NULL, 10);
+			merge[token_count-1] = (unsigned int) strtol(token, (char **) NULL, 10)-1;
 			token = strtok(NULL,",");
 		}
 		merge_history_list[i] = merge;
@@ -83,9 +83,10 @@ int main(void){
 		line_ptr = fgets(line, MAX, stdin);
 	}
 	//set in_vc according to heuristik solution
+	line_ptr = fgets(line, MAX, stdin);
     while(line_ptr){
+		in_vc[(unsigned int) strtol(line_ptr, (char **) NULL, 10)-1] = 1;
 		line_ptr = fgets(line, MAX, stdin);
-		in_vc[(unsigned int) strtol(line_ptr, (char **) NULL, 10)] = 1;
    	} 
 
 	//handle merge info pt. 2
@@ -103,7 +104,7 @@ int main(void){
     ///////////////////////////////////////////////////////////////////////////
 
 	for (int i = 0; i < total_amt_vertices; i++) {
-		if (in_vc[i]) printf("%d\n",i);
+		if (in_vc[i]) printf("%d\n",i+1);
 	}
 }
 

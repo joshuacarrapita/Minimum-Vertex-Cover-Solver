@@ -289,8 +289,8 @@ int main(void){
     //// print solution
     //////////////////////////////////////////////////////////////////////////
 	if(current_amt_edges == 0) current_amt_vertices = 0;
-	//print_reduction_solution();
-    //print_solution_graph(difference);
+	print_reduction_solution();
+    print_solution_graph(difference);
 	
     return 0;
 }

@@ -60,7 +60,7 @@ void delete_vertex(unsigned int v, bool put_in_vc){
 	 * remove all "active" neighbours of v from their degree lists, update their
 	 * degrees and add them back to the new correct list
 	 */
-	for (int i = 0, j = 0; j < vertex[v].degree; i++) {
+	for (int i = 0;i < vertex[v].adj_size; i++) {
 		int w = vertex[v].adj[i];
         if (vertex[w].used == 0) {
 			remove_from_degree_list(w);
@@ -73,7 +73,6 @@ void delete_vertex(unsigned int v, bool put_in_vc){
 			vertex[w].modified = 1;
 
 			add_to_degree_list(w);
-            j++;
         }
     }
 }
@@ -96,7 +95,7 @@ void reverse_deletion(int stack_checkpoint){
 
 		//update neighbors, only for active ones, as the other are deeper in the deletion_stack
 
-        for (int i = 0, j = 0; j < vertex[v].degree; i++) {
+        for (int i = 0; i < vertex[v].adj_size; i++) {
             unsigned int w = vertex[v].adj[i];
             if (vertex[w].used == 0) {
                 //increase degree and add to correct list
@@ -104,7 +103,6 @@ void reverse_deletion(int stack_checkpoint){
 				vertex[w].degree++;
 				vertex[w].modified = 1;
 				add_to_degree_list(w);
-                j++;
                 //check if w has maximum_degree
                 if (vertex[w].degree > maximum_degree) {
                     maximum_degree = vertex[w].degree;
@@ -181,20 +179,20 @@ void sort(unsigned int v){
 
 void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int triggerer){
 	//decrease current_amt_edgesy
-	current_amt_edges -= (vertex[merge_into].degree + vertex[other].degree + 2);
+	current_amt_edges -= (vertex[merge_into].degree + vertex[other].degree );
 	
 	//copy old adj list
 	int *old_adj = vertex[merge_into].adj;
 
 	//TODO: make new adj_list
 	int *new_adj = (int *) malloc(sizeof(int)*(vertex[merge_into].degree + vertex[other].degree -2));
+	
+	
 	int i = 0, j = 0, new_index = 0;
-
 	while(i < vertex[merge_into].adj_size && j < vertex[other].adj_size){
 
 		unsigned int v = vertex[merge_into].adj[i];
 		unsigned int w = vertex[other].adj[j];
-
 		if(v == triggerer || vertex[v].used != 0){ //skipp deleted vertices or if trigerrer 
 			i++;	
 			continue;
@@ -212,7 +210,9 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 				vertex[v].degree--;
 				add_to_degree_list(v);
 				j++;
-			}	
+			}else{
+
+			}
 		}else{
 			new_adj[new_index] = w;
 
@@ -229,7 +229,7 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 	
 	while(i < vertex[merge_into].adj_size){
 		unsigned int v = vertex[merge_into].adj[i];
-		if(vertex[v].used == 0){
+		if(vertex[v].used == 0 && v != triggerer){
 			new_adj[new_index] = v;
 			new_index++;
 		}
@@ -238,7 +238,7 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 
 	while(j < vertex[other].adj_size){
 		unsigned int w = vertex[other].adj[j];
-		if(vertex[w].used == 0){
+		if(vertex[w].used == 0 && w != triggerer){
 			new_adj[new_index] = w;
 
 			vertex[w].adj_size++;	
@@ -251,12 +251,14 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 
 		j++;	
 	}
-	if(new_index > vertex[merge_into].degree + vertex[other].degree -2) printf(" is bigger\n");
 	
 	new_adj = realloc(new_adj, sizeof(int) * new_index);
+
 	remove_from_degree_list(merge_into);
+
 	vertex[merge_into].degree = new_index;
 	vertex[merge_into].adj_size = new_index;
+
 	add_to_degree_list(merge_into);
 
 	vertex[merge_into].adj = new_adj;

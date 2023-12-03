@@ -81,7 +81,7 @@ void print_reduction_solution(){
 			if (vertex[i].used == 2) {
 				printf("#%d\n", i+1);
 			}
-		}
+	}	
 	printf("#ENDReductionResult\n");
 	printf("#STARTMerge\n");
 	printf("#%d\n", merge_stack_top +1);
@@ -100,10 +100,10 @@ void print_solution_graph(unsigned int difference){
 	if(current_amt_edges != 0){
 		for (int v = 0; v < total_amt_vertices; v++) {
 			if (vertex[v].used == 0) {
-				for (int i = 0, j = 0; j < vertex[v].degree; i++) {
+				for (int i = 0; i < vertex[v].adj_size; i++) {
+
 					if( vertex[vertex[v].adj[i]].used == 0){
 						printf("%d %d\n", v+1, vertex[v].adj[i]+1);
-						j++;
 					}
 				}
 				delete_vertex( v, 0); // don't need the graph after kernel

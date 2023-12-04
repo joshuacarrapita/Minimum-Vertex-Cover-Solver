@@ -271,7 +271,7 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 	if(new_index > maximum_degree){
 		   if(new_index > initial_maximum_degree){ 
 				   degree_list = realloc(degree_list, sizeof(int) * (new_index + 1));
-				   for(int i = maximum_degree+2; i <= new_index; i++){
+				   for(int i = maximum_degree + 1; i <= new_index; i++){
 						   degree_list[i] = -1;
 				   }
 		   }

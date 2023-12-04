@@ -167,7 +167,7 @@ unsigned int data_reduction(bool should_merge) {
 		}
 		//stop if not enough time.. 
 		time_t current_time = time(NULL);
-		if(current_time - start_time > 117) {
+		if(current_time - start_time > 118) {
 			timeout = true;
 			return k;
 		}
@@ -249,7 +249,7 @@ bool vc_branch(int k){
 		return false;	
 	}else{	
 		time_t current_time = time(NULL);
-		if(current_time - start_time > 117){
+		if(current_time - start_time > 118){
 			timeout = true;
 			return false;
 		}
@@ -354,6 +354,12 @@ int main(void){
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
     unsigned int difference = do_lp();
+
+	current_amt_vertices = 0;
+	for(int i = 0; i < total_amt_vertices; i++){
+		if(vertex[i].used == 0 && vertex[i].degree > 0) current_amt_vertices++;
+	}
+	
 	difference += data_reduction(true);
 
 	if(!timeout){
@@ -388,6 +394,7 @@ int main(void){
     //////////////////////////////////////////////////////////////////////////
     //// print solution
     //////////////////////////////////////////////////////////////////////////
+	
 	if(current_amt_edges == 0) current_amt_vertices = 0;
 	print_reduction_solution();
     print_solution_graph(difference);

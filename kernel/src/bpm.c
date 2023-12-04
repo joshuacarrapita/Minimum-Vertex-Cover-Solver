@@ -41,40 +41,6 @@ void bpm(int* l, int* r) {
 	    left[i] = -2;
     }
 
-	/*while (edges > 0) {
-		getline(&line, &len, stdin);
-		if (line[0] != '#') {
-			ptr = strtok(line, " ");
-			int l = (int) strtol(&ptr[1], (char**) NULL, 10) - 1;
-			ptr = strtok(NULL, "#");
-			int r = (int) strtol(&ptr[1], (char**) NULL, 10) - 1;
-
-			if (right[r] == -1) {
-				right[r] = -2;
-				conn[r] = malloc(sizeof(int));
-				conn[r][0] = l;
-				count[r] = 1;
-			} else {
-				conn[r] = realloc(conn[r], sizeof(int) * (count[r] + 1));
-				if (l < conn[r][count[r]-1]) {
-					for (int i=0; i<count[r]; i++) {
-						if (conn[r][i] > l) {
-							for (int j=count[r]; j>i; j--) conn[r][j] = conn[r][j-1];
-							conn[r][i] = l;
-							break;
-						}
-					}
-				} else conn[r][count[r]] = l;
-				count[r]++;
-			}
-			if (left[l] <= -1) left[l] = -2;
-			if ((left[l] <= -2) && (right[r] <= -2)) {
-				left[l] = r;
-				right[r] = l;
-			}
-			edges--;
-		}
-	}*/
 	int* r_free = malloc(sizeof(int) * total_amt_vertices);
 	int end_free = 0;
 	for (int i = 0; i < total_amt_vertices; i++){
@@ -119,7 +85,7 @@ void bpm(int* l, int* r) {
 		}
 		if (dist_nil == INT_MAX) break;
 
-		for (int i=0; i<total_amt_vertices; i++) {
+		for (int i = 0; i < total_amt_vertices; i++) {
 			if (right[i] == -2) {
 				helper2(i);
 			}

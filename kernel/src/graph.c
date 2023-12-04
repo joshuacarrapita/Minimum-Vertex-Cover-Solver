@@ -183,7 +183,14 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 	remove_from_degree_list(merge_into);
 	remove_from_degree_list(other);
 	remove_from_degree_list(triggerer);
-
+	if(maximum_degree > 0 && degree_list[maximum_degree] == -1 && (vertex[merge_into].degree == maximum_degree 
+			||	vertex[other].degree == maximum_degree 
+			||	vertex[triggerer].degree == maximum_degree)) {
+		// find new max degree
+		while(degree_list[maximum_degree] == -1){
+			maximum_degree--;
+		}
+	}
 	
 	//copy old adj list
 	int *old_adj = vertex[merge_into].adj;
@@ -264,7 +271,7 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 	if(new_index > maximum_degree){
 		   if(new_index > initial_maximum_degree){ 
 				   degree_list = realloc(degree_list, sizeof(int) * (new_index + 1));
-				   for(int i = maximum_degree +1; i < new_index + 1; i++){
+				   for(int i = maximum_degree+2; i <= new_index; i++){
 						   degree_list[i] = -1;
 				   }
 		   }

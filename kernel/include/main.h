@@ -52,7 +52,7 @@ unsigned int calc_lower_bound();
 
 unsigned int calc_upper_bound();
 
-unsigned int data_reduction();
+unsigned int data_reduction(bool should_merge);
 
 bool vc_branch(int k);
 

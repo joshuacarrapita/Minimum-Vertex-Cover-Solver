@@ -52,7 +52,7 @@ unsigned int calc_upper_bound(){
     return result;
 }
 
-unsigned int data_reduction() {
+unsigned int data_reduction(bool should_merge) {
     //TODO: more reduction rules
 	bool done = false;
 	bool found = false;
@@ -126,10 +126,11 @@ unsigned int data_reduction() {
 					found = true;
 				} else {
 					//TODO: forward deg-2 rule, substancially more work required
-
-					merge_vertices(neighbors[(x +1)% 2], neighbors[x], v);	
-					found = true;
-					k++;
+					if(should_merge){
+						merge_vertices(neighbors[(x +1)% 2], neighbors[x], v);	
+						found = true;
+						k++;
+					}
 					unsigned int next = vertex[v].degree_list_next;
 					v = next;
 				}
@@ -169,7 +170,7 @@ bool vc_branch(int k){
 		}
 	}
     //TODO: reduce data
-    k -= data_reduction();
+    k -= data_reduction(false);
     if (k < 0) { // Recursion hook, no vertex cover was found
         return false;
     }
@@ -269,7 +270,6 @@ int main(void){
     //////////////////////////////////////////////////////////////////////////
     unsigned int difference = data_reduction(true);
 
-	timeout = true;
 	if(!timeout){
 		stack_top = -1;//first reduction is never reversed
 		unsigned int lower_bound = calc_lower_bound();

@@ -5,7 +5,7 @@
 #include "main.h"
 #include "graph.h"
 #include "io.h"
-#include"bpm.h"
+#include "bpm.h"
 
 unsigned int total_amt_vertices;
 unsigned int total_amt_edges;
@@ -45,6 +45,92 @@ unsigned int calc_upper_bound(){
 	result = 1 + calc_upper_bound(); // update size of vc by +1 for v
     return result;
 }
+
+unsigned int do_lp(){
+
+    unsigned int difference = 0;
+    
+    int* left = malloc(sizeof(int) * total_amt_vertices);
+    int* right = malloc(sizeof(int) * total_amt_vertices);
+
+    bpm(left, right);
+    char* reach_r = malloc(sizeof(char) * total_amt_vertices);
+    char* reach_l = malloc(sizeof(char) * total_amt_vertices);
+    for (unsigned int i = 0; i < total_amt_vertices; i++) {
+        reach_r[i] = 0;
+        reach_l[i] = 0;
+    }
+
+    unsigned int* queue_r = malloc(sizeof(unsigned int) * total_amt_vertices);
+    unsigned int* queue_l = malloc(sizeof(unsigned int) * total_amt_vertices);
+    int r_curr = 0;
+    int l_curr = 0;
+    int r_max = 0;
+    int l_max = 0;
+    char t_reached = 0;
+
+    for (unsigned int i = 0; i < total_amt_vertices; i++) {
+        if (left[i] <= -1) {
+            queue_l[l_max] = i;
+            l_max++;
+            reach_l[i] = 1;
+        }
+    }
+    while (l_curr < l_max || r_curr < r_max) {
+        while (l_curr < l_max) {
+            Vertex v = vertex[queue_l[l_curr]];
+            l_curr++;
+            for (unsigned int i = 0; i < v.adj_size; i++) {
+                if (!reach_r[v.adj[i]]) {
+                    reach_r[v.adj[i]] = 1;
+                    queue_r[r_max] = v.adj[i];
+                    r_max++;
+                }
+            }
+        }
+        while (r_curr < r_max) {
+            unsigned int v = queue_r[r_curr];
+            r_curr++;
+            if (left[v] >= 0) {
+                if (!reach_l[left[v]]) {
+                    reach_l[left[v]] = 1;
+                    queue_l[l_max] = left[v];
+                    l_max++;
+                }
+            }else{
+				if(!t_reached) {
+					for (unsigned int i=0; i<total_amt_vertices; i++) {
+						if (right[i] >= 0 && !reach_r[i]) {
+							reach_r[i] = 1;
+							queue_r[r_max] = i;
+							r_max++;
+						}
+					}
+				}
+				t_reached = 1;
+			}	
+        }
+    }
+    
+    for (unsigned int i = 0; i < total_amt_vertices; i++) {
+        if (reach_l[i] && !reach_r[i]) {
+            delete_vertex(i, 0);
+        }
+        if (!reach_l[i] && reach_r[i]) {
+            delete_vertex(i, 1);
+            difference++;
+        }
+    }   
+
+    free(left);
+    free(right);
+    free(reach_r);
+    free(reach_l);
+    free(queue_r);
+    free(queue_l);
+
+	return difference;
+}	
 
 unsigned int data_reduction() {
     //TODO: more reduction rules
@@ -118,14 +204,13 @@ unsigned int data_reduction() {
 				}
 			}
 		}
-		if (found) continue;
+	if (found) continue;
 
 		//domination-rule
 		for(int i = 2; i <= maximum_degree; i++){
 			int current_vertex = degree_list[i];
 			while(current_vertex != -1){
 				if(is_dominated(current_vertex)){
-					//printf("found one with dominating rule");
 					found = 1;
 					k++;
 					break;
@@ -229,90 +314,10 @@ int main(void){
     //////////////////////////////////////////////////////////////////////////
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
-    unsigned int difference = 0;
-    
-    int* left = malloc(sizeof(int) * total_amt_vertices);
-    int* right = malloc(sizeof(int) * total_amt_vertices);
 
-    bpm(left, right);
-    char* reach_r = malloc(sizeof(char) * total_amt_vertices);
-    char* reach_l = malloc(sizeof(char) * total_amt_vertices);
-    for (unsigned int i=0; i<total_amt_vertices; i++) {
-        reach_r[i] = 0;
-        reach_l[i] = 0;
-    }
-
-    unsigned int* queue_r = malloc(sizeof(unsigned int) * total_amt_vertices);
-    unsigned int* queue_l = malloc(sizeof(unsigned int) * total_amt_vertices);
-    int r_curr = 0;
-    int l_curr = 0;
-    int r_max = 0;
-    int l_max = 0;
-    char t_reached = 0;
-
-    for (unsigned int i=0; i<total_amt_vertices; i++) {
-        if (left[i] <= -1) {
-            queue_l[l_max] = i;
-            l_max++;
-            reach_l[i] = 1;
-        }
-    }
-    while (l_curr < l_max || r_curr < r_max) {
-        while (l_curr < l_max) {
-            Vertex v = vertex[queue_l[l_curr]];
-            l_curr++;
-            for (unsigned int i=0; i<v.adj_size; i++) {
-                //printf("hicurr\n");
-                if (!reach_r[v.adj[i]]) {
-                    reach_r[v.adj[i]] = 1;
-                    queue_r[r_max] = v.adj[i];
-                    r_max++;
-                }
-            }
-        }
-        while (r_curr < r_max) {
-            unsigned int v = queue_r[r_curr];
-            r_curr++;
-            if (left[v] >= 0) {
-                if (!reach_l[left[v]]) {
-                    reach_l[left[v]] = 1;
-                    queue_l[l_max] = left[v];
-                    l_max++;
-                }
-                else if (!t_reached) {
-                    for (unsigned int i=0; i<total_amt_vertices; i++) {
-                        if (right[i] >= 0 && !reach_r[i]) {
-                            reach_r[i] = 1;
-                            queue_r[r_max] = i;
-                            r_max++;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    //for (int i=0; i<total_amt_vertices; i++) printf("reach %i: l%d, r%d\n", i, reach_l[i], reach_r[i]);
-    
-    for (unsigned int i=0; i<total_amt_vertices; i++) {
-        if (reach_l[i] && !reach_r[i]) {
-            //delete_vertex(i, 0);
-        }
-        if (!reach_l[i] && reach_r[i]) {
-            //delete_vertex(i, 1);
-            //difference++;
-        }
-    }   
-
-    free(left);
-    free(right);
-    free(reach_r);
-    free(reach_l);
-    free(queue_r);
-    free(queue_l);
-
-    //printf("difference1: %i\n", difference);
-    difference += data_reduction(); 
-    //printf("difference2: %i\n", difference);
+    unsigned int difference = do_lp();
+	printf("lp done\n");
+	difference += data_reduction(); 
     /*stack_top = -1;//first reduction is never reversed
 				   
     unsigned int lower_bound = calc_lower_bound();

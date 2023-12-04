@@ -23,7 +23,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Profile")
 endif()
 
 # Add your source files
-add_executable(kernel ./src/main.c ./src/graph.c ./src/io.c ./include/main.h ./include/graph.h ./include/io.h)
+add_executable(kernel ./src/main.c ./src/graph.c ./src/io.c ./src/bpm.c ./include/main.h ./include/graph.h ./include/io.h ./include/bpm.h)
 
 # Choose the compiler
 set(CMAKE_C_COMPILER "gcc")

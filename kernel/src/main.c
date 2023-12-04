@@ -6,6 +6,7 @@
 #include "main.h"
 #include "graph.h"
 #include "io.h"
+#include "bpm.h"
 
 unsigned int total_amt_vertices;
 unsigned int total_amt_edges;
@@ -52,6 +53,91 @@ unsigned int calc_upper_bound(){
     return result;
 }
 
+unsigned int do_lp(){
+    unsigned int difference = 0;
+    
+    int* left = malloc(sizeof(int) * total_amt_vertices);
+    int* right = malloc(sizeof(int) * total_amt_vertices);
+
+    bpm(left, right);
+    char* reach_r = malloc(sizeof(char) * total_amt_vertices);
+    char* reach_l = malloc(sizeof(char) * total_amt_vertices);
+    for (unsigned int i = 0; i < total_amt_vertices; i++) {
+        reach_r[i] = 0;
+        reach_l[i] = 0;
+    }
+
+    unsigned int* queue_r = malloc(sizeof(unsigned int) * total_amt_vertices);
+    unsigned int* queue_l = malloc(sizeof(unsigned int) * total_amt_vertices);
+    int r_curr = 0;
+    int l_curr = 0;
+    int r_max = 0;
+    int l_max = 0;
+    char t_reached = 0;
+
+    for (unsigned int i = 0; i < total_amt_vertices; i++) {
+        if (left[i] <= -1) {
+            queue_l[l_max] = i;
+            l_max++;
+            reach_l[i] = 1;
+        }
+    }
+    while (l_curr < l_max || r_curr < r_max) {
+        while (l_curr < l_max) {
+            Vertex v = vertex[queue_l[l_curr]];
+            l_curr++;
+            for (unsigned int i = 0; i < v.adj_size; i++) {
+                if (!reach_r[v.adj[i]]) {
+                    reach_r[v.adj[i]] = 1;
+                    queue_r[r_max] = v.adj[i];
+                    r_max++;
+                }
+            }
+        }
+        while (r_curr < r_max) {
+            unsigned int v = queue_r[r_curr];
+            r_curr++;
+            if (left[v] >= 0) {
+                if (!reach_l[left[v]]) {
+                    reach_l[left[v]] = 1;
+                    queue_l[l_max] = left[v];
+                    l_max++;
+                }
+            }else{
+				if(!t_reached) {
+					for (unsigned int i=0; i<total_amt_vertices; i++) {
+						if (right[i] >= 0 && !reach_r[i]) {
+							reach_r[i] = 1;
+							queue_r[r_max] = i;
+							r_max++;
+						}
+					}
+				}
+				t_reached = 1;
+			}	
+        }
+    }
+    
+    for (unsigned int i = 0; i < total_amt_vertices; i++) {
+        if (reach_l[i] && !reach_r[i]) {
+            delete_vertex(i, 0);
+        }
+        if (!reach_l[i] && reach_r[i]) {
+            delete_vertex(i, 1);
+            difference++;
+        }
+    }   
+
+    free(left);
+    free(right);
+    free(reach_r);
+    free(reach_l);
+    free(queue_r);
+    free(queue_l);
+
+	return difference;
+}	
+
 unsigned int data_reduction(bool should_merge) {
     //TODO: more reduction rules
 	bool done = false;
@@ -64,6 +150,7 @@ unsigned int data_reduction(bool should_merge) {
 		if (maximum_degree == 0) { // In case there is only a degree 0 list
 			return k;
 		}
+		
 		//degree 1 rule
 		while (degree_list[1] != -1) {
 			unsigned int v = degree_list[1];
@@ -78,14 +165,12 @@ unsigned int data_reduction(bool should_merge) {
 			}
 			found = true;
 		}
-
 		//stop if not enough time.. 
 		time_t current_time = time(NULL);
 		if(current_time - start_time > 117) {
 			timeout = true;
 			return k;
 		}
-
 		if (found) continue;
 
 		//degree 2-rule
@@ -268,7 +353,8 @@ int main(void){
     //////////////////////////////////////////////////////////////////////////
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
-    unsigned int difference = data_reduction(true);
+    unsigned int difference = do_lp();
+	difference += data_reduction(true);
 
 	if(!timeout){
 		stack_top = -1;//first reduction is never reversed
@@ -298,10 +384,10 @@ int main(void){
 		}
 		if(!timeout) difference += lower_bound;
 	}
+
     //////////////////////////////////////////////////////////////////////////
     //// print solution
     //////////////////////////////////////////////////////////////////////////
-
 	if(current_amt_edges == 0) current_amt_vertices = 0;
 	print_reduction_solution();
     print_solution_graph(difference);

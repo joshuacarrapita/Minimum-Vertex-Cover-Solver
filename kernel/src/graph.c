@@ -180,6 +180,10 @@ void sort(unsigned int v){
 void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int triggerer){
 	//decrease current_amt_edgesy
 	current_amt_edges -= (vertex[merge_into].degree + vertex[other].degree );
+	remove_from_degree_list(merge_into);
+	remove_from_degree_list(other);
+	remove_from_degree_list(triggerer);
+
 	
 	//copy old adj list
 	int *old_adj = vertex[merge_into].adj;
@@ -194,7 +198,7 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 		unsigned int v = vertex[merge_into].adj[i];
 		unsigned int w = vertex[other].adj[j];
 		if(v == triggerer || vertex[v].used != 0){ //skipp deleted vertices or if trigerrer 
-			i++;	
+			i++;
 			continue;
 		}
 		if(w == triggerer || vertex[w].used != 0){
@@ -209,11 +213,16 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 				remove_from_degree_list(v);
 				vertex[v].degree--;
 				add_to_degree_list(v);
+				// check if v was max_degree, unless v had degree 0 (occurs in instance 2 1 \n 1 2)
+				if(maximum_degree > 0 && vertex[v].degree+1 == maximum_degree && degree_list[maximum_degree] == -1){
+					// find new max degree
+					while(degree_list[maximum_degree] == -1){
+						maximum_degree--;
+					}
+				}
 				j++;
-			}else{
-
 			}
-		}else{
+		} else {
 			new_adj[new_index] = w;
 
 			vertex[w].adj_size++;	
@@ -251,10 +260,18 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 
 		j++;	
 	}
+
+	if(new_index > maximum_degree){
+		   if(new_index > initial_maximum_degree){ 
+				   degree_list = realloc(degree_list, sizeof(int) * (new_index + 1));
+				   for(int i = maximum_degree +1; i < new_index + 1; i++){
+						   degree_list[i] = -1;
+				   }
+		   }
+		   maximum_degree = new_index;
+	}       
 	
 	new_adj = realloc(new_adj, sizeof(int) * new_index);
-
-	remove_from_degree_list(merge_into);
 
 	vertex[merge_into].degree = new_index;
 	vertex[merge_into].adj_size = new_index;
@@ -280,10 +297,8 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 
 	//deleted other vertices 
 	vertex[other].used = 1;
-	remove_from_degree_list(other);
 
 	vertex[triggerer].used = 1;
-	remove_from_degree_list(triggerer);
 
 	//update edges and vertices
 	current_amt_vertices -= 2;

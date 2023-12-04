@@ -18,6 +18,7 @@ extern Vertex *vertex;
 
 #define MAX 100
 
+extern int initial_maximum_degree;
 extern int maximum_degree; // holds the value for the highest degree found in the graph
 
 /*

@@ -19,6 +19,7 @@ unsigned int highest_remaining_k;
 Vertex *vertex;
 
 
+int initial_maximum_degree;
 int maximum_degree; // holds the value for the highest degree found in the graph
 int *degree_list; 
 
@@ -227,6 +228,7 @@ void initialize_globals(){
 
 	parseinput();
 
+	initial_maximum_degree = maximum_degree;
 	current_amt_edges = total_amt_edges;
 	current_amt_vertices = 0;
 
@@ -300,6 +302,7 @@ int main(void){
     //// print solution
     //////////////////////////////////////////////////////////////////////////
 
+	if(current_amt_edges == 0) current_amt_vertices = 0;
 	print_reduction_solution();
     print_solution_graph(difference);
 	

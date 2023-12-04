@@ -72,6 +72,7 @@ int main(void){
 			memcheck(merge = realloc(merge,token_count*sizeof(int)));
 			merge[token_count-1] = (unsigned int) strtol(token, (char **) NULL, 10)-1;
 			token = strtok(NULL,",");
+			token_count++;
 		}
 		merge_history_list[i] = merge;
 		line_ptr = fgets(line, MAX, stdin);

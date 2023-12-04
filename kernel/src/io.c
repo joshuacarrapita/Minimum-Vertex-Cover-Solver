@@ -85,10 +85,10 @@ void print_reduction_solution(){
 	printf("#ENDReductionResult\n");
 	printf("#STARTMerge\n");
 	printf("#%d\n", merge_stack_top +1);
-	for(int i = 0; i < merge_stack_top; i++){
+	for(int i = 0; i < merge_stack_top+1; i++){
 		printf("#%d,%d,%d\n", merge_stack[i]->merge_into +1, merge_stack[i]->other +1, merge_stack[i]->triggerer +1);	
 	}	
-	printf("ENDMerge\n");
+	printf("#ENDMerge\n");
 }
 
 void print_solution_graph(unsigned int difference){

@@ -1,10 +1,13 @@
 #include <stdlib.h>
+#include <stdbool.h>
 #include "main.h"
 #include "graph.h"
 #include "clique.h"
 
 Clique **clique_lists;
 unsigned int number_of_cliques = 0;
+
+unsigned int max_clique = 0;
 
 void new_clique(unsigned int vertex){
 	//create new Clique with only vertex in it	
@@ -16,6 +19,7 @@ void new_clique(unsigned int vertex){
 	new_clique->size = 1;
 	new_clique->next = NULL;
 	new_clique->prev = NULL;
+	if(!max_clique) max_clique++;
 	
 	add_to_clique_list(new_clique);
 	number_of_cliques++;	
@@ -32,16 +36,39 @@ void add_to_clique_list(Clique *clique){
 void add_to_clique(Clique clique, unsigned int vertex){
 	remove_from_clique_list(clique);
 	clique->vertices = realloc(clique->vertices, sizeof(int) * ++clique->size);
+	add_to_clique_list(clique);
+	if(clique->size > max_clique){
+		max_clique = clique->size;
+	}
+	sort(clique->vertices);
 }
 
 char in_clique(Clique clique, unsigned int vertex){
 	//TODO: check if vertex is in clique
-	return 0;
+	char result = 1;	
+	unsigned int *adj = vertex[vertex].adj;
+	int i = 0, j = 0;
+	while(i < vertex[vertex].adj_size && j < clique->size){
+		unsigned int w = adj[i];
+		if(vertex[w].used != 0){
+			i++;
+			continue;
+		}
+		if(clique->vertices[j] == w){
+			i++;
+			j++;
+		}
+	}
+	if(j < clique->size){
+		result = 1;
+	}
+
+	return result;
 }
 
 unsigned int calc_clique_cover(){
 	unsigned int biggest_clique = 0;	
-	clique_lists = malloc(current_maximum_degree * sizeof(clique *));
+	clique_lists = malloc(current_maximum_degree * sizeof(Clique *));
 
 	for(int i = 0; i < current_maximum_degree; i++){
 		clique_lists[i] = NULL;
@@ -49,9 +76,11 @@ unsigned int calc_clique_cover(){
 
 	for(int i = current_maximum_degree; i > 0; i--){// check for all vertices descending in degree
 		unsigned int current_vertex = degree_list[i];
+		
+		bool found_clique = true;
 		while(current_vertex != -1){
-			for(j = i; j > 0; j++){//check for vertice for all cliques in descending size
-				char found_clique = 0;
+			for(int j = i; j > 0; j--){//check for vertice for all cliques in descending size
+
 				Clique *clique = clique_lists[i];		
 				while(clique){
 					if(in_clique(clique, current_vertex)){

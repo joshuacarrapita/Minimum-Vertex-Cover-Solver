@@ -1,5 +1,5 @@
-#ifndef KERNEL_INCLUDE_GRAPH_H 
-#define KERNEL_INCLUDE_GRAPH_H 
+#ifndef LOWERBOUND_INCLUDE_GRAPH_H 
+#define LOWERBOUND_INCLUDE_GRAPH_H 
 
 typedef struct Vertex{
     int *adj; //adjency list of vertex
@@ -57,7 +57,7 @@ void reverse_deletion(int stack_checkpoint);
 
 int is_dominated(unsigned int w);
 
-void sort(unsigned int v);
+void sort(unsigned int *array_, unsigned int size);
 
 void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int triggerer);
 

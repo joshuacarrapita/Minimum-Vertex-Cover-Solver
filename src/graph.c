@@ -151,25 +151,25 @@ int is_dominated(unsigned int v){
 	return -1;
 }	
 
-void insertion_sort(unsigned int v, int left, int right){
+void insertion_sort(unsigned int *array, int left, int right){
 	for (int i = left + 1; i < right; i++) { 
-        unsigned int temp = vertex[v].adj[i]; 
+        unsigned int temp = array[i]; 
         int j = i - 1; 
-        while (j >= left && vertex[v].adj[j] > temp) { 
-            vertex[v].adj[j + 1] = vertex[v].adj[j]; 
+        while (j >= left && array[j] > temp) { 
+            array[j + 1] = array[j]; 
             j--; 
         } 
-        vertex[v].adj[j + 1] = temp; 
+        array[j + 1] = temp; 
     } 	
 }
 
-void sort(unsigned int v){
+void sort(unsigned int *array, unsigned int size){
 	//int min_array_size = 42;
 	//break array into subarrays of size 42 and sort them via insertionsort
 	//for(int i = 0; i < vertex[v].adj_size; i += min_array_size){
-		int right = vertex[v].adj_size;
+		int right = size;
 		//if(i < right) rightborder = i;
-		insertion_sort(v,0,right);
+		insertion_sort(array ,0,right);
 	//}
 
 	//for(int i = min_array_size; i < j
@@ -235,7 +235,7 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 			vertex[w].adj_size++;	
 			vertex[w].adj = realloc(vertex[w].adj, sizeof(int) * vertex[w].adj_size);
 			vertex[w].adj[vertex[w].adj_size -1] = merge_into;
-			sort(w);		
+			sort(vertex[w].adj, vertex[w].adj_size);		
 
 			j++;	
 			new_index++;
@@ -260,7 +260,7 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 			vertex[w].adj_size++;	
 			vertex[w].adj = realloc(vertex[w].adj, sizeof(int) * vertex[w].adj_size);
 			vertex[w].adj[vertex[w].adj_size -1] = merge_into;
-			sort(w);		
+			sort(vertex[w].adj, vertex[w].adj_size);		
 
 			new_index++;
 		}	
@@ -286,7 +286,7 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 	add_to_degree_list(merge_into);
 
 	vertex[merge_into].adj = new_adj;
-	sort(merge_into);	
+	sort(vertex[merge_into].adj, vertex[merge_into].adj_size);	
 
 	// make new Merge instance
 	Merge *merge = (Merge *) malloc(sizeof(Merge));

@@ -1,5 +1,5 @@
-#ifndef KERNEL_INCLUDE_MAIN_H
-#define KERNEL_INCLUDE_MAIN_H
+#ifndef LOWERBOUND_INCLUDE_MAIN_H
+#define LOWERBOUND_INCLUDE_MAIN_H
 
 #include "graph.h"
 
@@ -41,7 +41,7 @@ extern int *degree_list;
  * stack of deletions we executed to be able to reverse the graph to a previous
  * condition, can be at most total_amt_vertices long as we can't delete more
  * vertices than that
- */
+*/
 extern int *deletion_stack;
 extern int deletion_stack_top; // index of the "topmost" /
 							   // "most recently added" stack entry

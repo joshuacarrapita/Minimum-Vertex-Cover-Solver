@@ -1,5 +1,5 @@
-#ifndef KERNEL_INCLUDE_CLIQUE_H
-#define KERNEL_INCLUDE_CLIQUE_H
+#ifndef LOWERBOUND_INCLUDE_CLIQUE_H
+#define LOWERBOUND_INCLUDE_CLIQUE_H
 
 typedef struct Clique{
 	unsigned int *vertices;

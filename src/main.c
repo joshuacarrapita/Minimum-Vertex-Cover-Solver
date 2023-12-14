@@ -34,9 +34,13 @@ int merge_stack_top;
 time_t start_time;
 bool timeout;
 
+unsigned int greedy_clique_cover(){
+
+}
 
 unsigned int calc_lower_bound(){
     unsigned int result = 0;
+    result = greedy_clique_cover();
     if( current_maximum_degree > 0 ) { // don't divide by 0 when edges == max_degree == 0
 		result = (current_amt_edges + (current_maximum_degree-1))/current_maximum_degree; // weird term rounds up
 	}
@@ -344,7 +348,7 @@ void initialize_globals(){
 			add_to_degree_list(i); // 0-list has no effect
 			current_amt_vertices++;
 		}
-		if(vertex[i].degree > 1) sort(i);
+		if(vertex[i].degree > 1) sort(vertex[i].adj, vertex[i].adj_size);
 	}
 
 	lower_bound = calc_lower_bound();

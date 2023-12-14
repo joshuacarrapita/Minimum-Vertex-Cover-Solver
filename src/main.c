@@ -25,10 +25,11 @@ int current_maximum_degree;
 int *degree_list; 
 
 int *deletion_stack;
-int stack_top = -1; //index of the "topmost"/"most recently added" stack entry
+int deletion_stack_top; //index of the "topmost" /
+						//"most recently added" stack entry
 				
 Merge **merge_stack;
-int merge_stack_top = -1;
+int merge_stack_top;
 
 time_t start_time;
 bool timeout;
@@ -215,6 +216,7 @@ unsigned int data_reduction(bool should_merge) {
 					found = true;
 				} else {
 					//TODO: forward deg-2 rule, substancially more work required
+					//TODO: Handle lower_bound and merging
 					if(should_merge){
 						merge_vertices(neighbors[(x +1)% 2], neighbors[x], v);	
 						found = true;
@@ -276,7 +278,7 @@ bool vc_branch(int k){
 
 	// pick a vertex of maximum degree (this is an attempt at an heuristic)
     unsigned int v = degree_list[current_maximum_degree]; 
-    int stack_checkpoint = stack_top;
+    int stack_checkpoint = deletion_stack_top;
 	delete_vertex(v, 1);
 	if (vc_branch(k - 1)) {
         return true; // it makes a vertex cover of size k with our deleted one
@@ -325,8 +327,10 @@ void initialize_globals(){
 	// alloc deletion_stack mem and init with standard content
 	deletion_stack = malloc(total_amt_vertices * sizeof(int));
 	for (int i = 0; i < total_amt_vertices; i++) deletion_stack[i] = -1;
+	deletion_stack_top = -1;
 	
 	merge_stack = malloc(total_amt_vertices * sizeof(Merge *));
+	merge_stack_top = -1;
 	/*
 	 * alloc degree_list array and init with content
 	 * -> set first elements of all degree lists to -1 (symbolises NULL)
@@ -342,6 +346,9 @@ void initialize_globals(){
 		}
 		if(vertex[i].degree > 1) sort(i);
 	}
+
+	lower_bound = calc_lower_bound();
+	upper_bound = calc_upper_bound(deletion_stack_top);
 }
 
 int main(void){
@@ -357,17 +364,15 @@ int main(void){
     //////////////////////////////////////////////////////////////////////////
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
-    unsigned int difference = do_lp();
-
+    do_lp();
 	current_amt_vertices = 0;
 	for(int i = 0; i < total_amt_vertices; i++){
 		if(vertex[i].used == 0 && vertex[i].degree > 0) current_amt_vertices++;
 	}
-	
-	difference += data_reduction(MERGE);
+	data_reduction(MERGE);
 
 	if(!timeout){
-		stack_top = -1;//first reduction is never reversed
+		deletion_stack_top = -1;//first reduction is never reversed
 		lower_bound = calc_lower_bound();
 		upper_bound = calc_upper_bound(NO_REVERSE);
 		
@@ -392,7 +397,6 @@ int main(void){
 			reverse_deletion(-1);
 			vc_branch(lower_bound);
 		}
-		if(!timeout) difference += lower_bound;
 	}
 
     //////////////////////////////////////////////////////////////////////////

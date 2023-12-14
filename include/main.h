@@ -19,8 +19,8 @@ extern Vertex *vertex;
 
 #define MAX 100
 #define NO_REVERSE -2
-#define NO_MERGE 0
 #define MERGE 1
+#define NO_MERGE 0
 
 extern int initial_maximum_degree;
 extern int current_maximum_degree; // holds the value for the highest degree found in the graph
@@ -43,8 +43,8 @@ extern int *degree_list;
  * vertices than that
  */
 extern int *deletion_stack;
-
-extern int stack_top; // index of the "topmost" / "most recently added" stack entry
+extern int deletion_stack_top; // index of the "topmost" /
+							   // "most recently added" stack entry
 					  
 extern Merge **merge_stack;
 extern int merge_stack_top;

@@ -33,8 +33,8 @@ void remove_from_degree_list(unsigned int v){
 
 void delete_vertex(unsigned int v, bool put_in_vc){
 	// add v to deletion stack
-	stack_top++;
-	deletion_stack[stack_top] = v;
+	deletion_stack_top++;
+	deletion_stack[deletion_stack_top] = v;
 
 	// update used status
 	if (put_in_vc) { 
@@ -79,9 +79,9 @@ void delete_vertex(unsigned int v, bool put_in_vc){
 
 void reverse_deletion(int stack_checkpoint){
 	// as long as we didn't revert back to the desired state
-    while (stack_top > stack_checkpoint) { 
+    while (deletion_stack_top > stack_checkpoint) { 
 		// get the most recently deleted vertex
-        unsigned int v = deletion_stack[stack_top];
+        unsigned int v = deletion_stack[deletion_stack_top];
         vertex[v].used = 0; // set its status to "untouched"
         add_to_degree_list(v); // add it to its corresponding degree list
 		current_amt_edges += vertex[v].degree;
@@ -109,7 +109,7 @@ void reverse_deletion(int stack_checkpoint){
                 }
             }
         }
-        stack_top--;
+        deletion_stack_top--;
     }
 }
 
@@ -299,8 +299,8 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 	merge_stack_top++;
 	merge_stack[merge_stack_top] = merge;
 
-	//stack_top++; //without this at first and only merge in first reduction
-	//deletion_stack[stack_top] = -1;
+	//deletion_stack_top++; //without this at first and only merge in first reduction
+	//deletion_stack[deletion_stack_top] = -1;
 
 	//deleted other vertices 
 	vertex[other].used = 1;

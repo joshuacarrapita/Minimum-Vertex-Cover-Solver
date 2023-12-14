@@ -4,8 +4,8 @@
 typedef struct Clique{
 	unsigned int *vertices;
 	unsigned int size;
-	Struct Clique *next;
-	Struct Clique *prev;
+	struct Clique *next;
+	struct Clique *prev;
 } Clique;
 
 void new_clique(unsigned int vertex);
@@ -14,10 +14,11 @@ void remove_from_clique_lists(Clique *clique);
 
 void add_to_clique_lists(Clique *clique);
 
-void add_to_clique(Clique clique, unsigned int vertex);
+void add_to_clique(Clique *clique, unsigned int vertex);
 
-char in_clique(Clique clique, unsigned int vertex);
+bool in_clique(Clique *clique, unsigned int v);
 
 unsigned int calc_clique_cover();
 
 #endif
+

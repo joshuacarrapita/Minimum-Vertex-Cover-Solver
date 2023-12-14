@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 #include "main.h"
+#include "clique.h"
 #include "graph.h"
 #include "io.h"
 #include "bpm.h"
@@ -38,7 +39,7 @@ unsigned int calc_lower_bound(){
     unsigned int result = 0;
     if( current_maximum_degree > 0 ) { // don't divide by 0 when edges == max_degree == 0
 		result = (current_amt_edges + (current_maximum_degree-1))/current_maximum_degree; // weird term rounds up
-		clique_heuristic = calc_clique_cover();
+		unsigned int clique_heuristic = calc_clique_cover();
 		if (result < clique_heuristic) result = clique_heuristic;
 	}
     return result;

@@ -1,6 +1,8 @@
 #ifndef LOWERBOUND_INCLUDE_GRAPH_H 
 #define LOWERBOUND_INCLUDE_GRAPH_H 
 
+#include "clique.h"
+
 typedef struct Vertex{
     int *adj; //adjency list of vertex
 	int adj_size; //currentsize of adj aray
@@ -9,15 +11,15 @@ typedef struct Vertex{
     unsigned int degree; //the current degree of vertex
     unsigned int degree_list_prev;//pointer to prev element in degree_list
     unsigned int degree_list_next;//pointer to next element in degree_list
-	clique* clique;
-}Vertex;
+	Clique *clique;
+} Vertex;
 
-typedef struct  Merge{
+typedef struct Merge{
 	unsigned int merge_into;
 	unsigned int other;
 	unsigned int triggerer;
 	int *old_adj;
-}Merge;
+} Merge;
 
 //all functions with info
 /*

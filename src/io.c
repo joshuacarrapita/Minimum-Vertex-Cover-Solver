@@ -25,13 +25,9 @@ void parse_input(){
 	total_amt_edges = strtol(ptr, (char**) NULL, 10);
 
 	// alloc vertex array and init with standard content
-	vertex = malloc(total_amt_vertices * sizeof(Vertex));
+	vertex = calloc(total_amt_vertices, sizeof(Vertex));
 	for (int i = 0; i < total_amt_vertices; i++) {
-		vertex[i].adj = NULL;
-		vertex[i].adj_size = 0;
-		vertex[i].used = 0;
 		vertex[i].modified = 1;
-		vertex[i].degree = 0;
 		vertex[i].degree_list_prev = -1; // -1 symbolises NULL
 		vertex[i].degree_list_next = -1;
 	}

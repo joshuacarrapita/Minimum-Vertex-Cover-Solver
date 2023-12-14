@@ -9,6 +9,7 @@ typedef struct Vertex{
     unsigned int degree; //the current degree of vertex
     unsigned int degree_list_prev;//pointer to prev element in degree_list
     unsigned int degree_list_next;//pointer to next element in degree_list
+	clique* clique;
 }Vertex;
 
 typedef struct  Merge{
@@ -19,7 +20,6 @@ typedef struct  Merge{
 }Merge;
 
 //all functions with info
-
 /*
  * INFO: add a vertex to it's corresponding degree list and update maxmimum_degree
  *

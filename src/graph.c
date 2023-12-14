@@ -176,7 +176,6 @@ void sort(unsigned int *array, unsigned int size){
 	//mergesort abondend, does it really make a difference when array size is under 100 ? 
 }	
 
-
 void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int triggerer){
 	//decrease current_amt_edgesy
 	current_amt_edges -= (vertex[merge_into].degree + vertex[other].degree );

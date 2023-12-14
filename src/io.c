@@ -74,6 +74,6 @@ void parse_input(){
 //// out
 ///////////////////////////////////////////////////////////////////////////////
 void print_lower_bound(){
-	printf(lower_bound);
+	printf("%d",lower_bound);
 }
 

@@ -8,7 +8,7 @@
 ##############################################################################
 cmake_minimum_required(VERSION 3.22)
 
-project(Kernel VERSION 1.0)
+project(LowerBound VERSION 1.0)
 
 # Set the default build type to Release
 if(NOT CMAKE_BUILD_TYPE)
@@ -23,25 +23,25 @@ if(CMAKE_BUILD_TYPE STREQUAL "Profile")
 endif()
 
 # Add your source files
-add_executable(kernel ./src/main.c ./src/graph.c ./src/io.c ./src/bpm.c ./include/main.h ./include/graph.h ./include/io.h ./include/bpm.h)
+add_executable(lowerbound ./src/main.c ./src/graph.c ./src/io.c ./src/bpm.c ./include/main.h ./include/graph.h ./include/io.h ./include/bpm.h)
 
 # Choose the compiler
 set(CMAKE_C_COMPILER "gcc")
 
 # Specify different compile options for Debug and Release builds
-target_compile_options(kernel PRIVATE
+target_compile_options(lowerbound PRIVATE
     $<$<CONFIG:Debug>: -g -O0 -Wall -Wextra -pedantic -std=c11>
     $<$<CONFIG:Profile>: -pg -O0 -Wall -Wextra -pedantic -std=c11>
 	$<$<CONFIG:Release>: -O3 -march=native -Wall -Wextra -pedantic -std=c11>
 )
 
 # Specify different preprocessor definitions for Debug and Release builds
-target_compile_definitions(kernel PRIVATE
+target_compile_definitions(lowerbound PRIVATE
     $<$<CONFIG:Debug>:DEBUG=1>
 )
 
 # Specify different include directories for Debug and Release builds if necessary
-target_include_directories(kernel PRIVATE include)
+target_include_directories(lowerbound PRIVATE include)
 # target_include_directories(your_executable PRIVATE
 #     $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/debug_include>
 #     $<$<CONFIG:Release>:${CMAKE_SOURCE_DIR}/release_include>

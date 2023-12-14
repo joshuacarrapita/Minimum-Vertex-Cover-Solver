@@ -313,5 +313,3 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 	current_amt_edges += new_index;
 }	
 
-
-

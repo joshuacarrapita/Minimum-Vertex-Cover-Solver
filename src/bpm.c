@@ -96,3 +96,4 @@ void bpm(int* l, int* r) {
     free(r_free);
     free(queue);
 }
+

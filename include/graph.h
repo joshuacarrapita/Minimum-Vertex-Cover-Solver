@@ -35,7 +35,6 @@ void add_to_degree_list(unsigned int v);
  *
  * EXAMPLE: removes vertex v from degree_list[x] if v was of degree x
  */
-
 void remove_from_degree_list(unsigned int v);
 
 /*
@@ -43,9 +42,8 @@ void remove_from_degree_list(unsigned int v);
  * put it on the deletion_stack, 
  * remove it from its degree list,
  * update the degrees and degree lists of all its neighbours, 
- * reduce current_           if a neighbour was the only one with that degree
+ * reduce current_maximum_degree if a neighbour was the only one with that degree
  */
-
 void delete_vertex(unsigned int v, bool put_in_vc);
 
 
@@ -55,7 +53,6 @@ void delete_vertex(unsigned int v, bool put_in_vc);
  * add it to its corresponding degree list,
  * update the degrees and degree lists of all its neighbours, 
  */
-
 void reverse_deletion(int stack_checkpoint);
 
 int is_dominated(unsigned int w);
@@ -64,6 +61,5 @@ void sort(unsigned int v);
 
 void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int triggerer);
 
-
-
 #endif 
+

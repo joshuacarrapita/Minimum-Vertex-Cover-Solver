@@ -19,10 +19,10 @@ extern Vertex *vertex;
 #define MAX 100
 
 extern int initial_maximum_degree;
-extern int maximum_degree; // holds the value for the highest degree found in the graph
+extern int current_maximum_degree; // holds the value for the highest degree found in the graph
 
 /*
- * INFO: an array of size maximum_degree that holds the index of the first
+ * INFO: an array of size current_maximum_degree+1 that holds the index of the first
  * vertex that represents a degree
  *
  * EXAMPLE: degree_list[i] holds value x if vertex x is the first in the list of

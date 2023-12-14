@@ -49,10 +49,10 @@ void delete_vertex(unsigned int v, bool put_in_vc){
 	current_amt_vertices -= 1;
 
     // check if v was max_degree, unless v had degree 0 (occurs in instance 2 1 \n 1 2)
-    if(maximum_degree > 0 && vertex[v].degree == maximum_degree && degree_list[maximum_degree] == -1){
+    if(current_maximum_degree > 0 && vertex[v].degree == current_maximum_degree && degree_list[current_maximum_degree] == -1){
         // find new max degree
-        while(degree_list[maximum_degree] == -1){
-            maximum_degree--;
+        while(degree_list[current_maximum_degree] == -1){
+            current_maximum_degree--;
         }
     }
 
@@ -65,9 +65,9 @@ void delete_vertex(unsigned int v, bool put_in_vc){
         if (vertex[w].used == 0) {
 			remove_from_degree_list(w);
 
-            //  decrease maximum_degree if needed
-			if (vertex[w].degree == maximum_degree && degree_list[maximum_degree] == -1) {
-				maximum_degree--;
+            //  decrease current_maximum_degree if needed
+			if (vertex[w].degree == current_maximum_degree && degree_list[current_maximum_degree] == -1) {
+				current_maximum_degree--;
 			}
 			vertex[w].degree--;
 			vertex[w].modified = 1;
@@ -87,10 +87,10 @@ void reverse_deletion(int stack_checkpoint){
 		current_amt_edges += vertex[v].degree;
 		current_amt_vertices += 1;
 
-		// I reallocated the maximum_degree update into add_to_degree_list //L: i think either both in lists function or neither, since we cant do it for the other, lets keep it here
+		// I reallocated the current_maximum_degree update into add_to_degree_list //L: i think either both in lists function or neither, since we cant do it for the other, lets keep it here
 		// if v has the highest degree now
-		if (vertex[v].degree > maximum_degree) {
-            maximum_degree = vertex[v].degree;
+		if (vertex[v].degree > current_maximum_degree) {
+            current_maximum_degree = vertex[v].degree;
         }
 
 		//update neighbors, only for active ones, as the other are deeper in the deletion_stack
@@ -103,9 +103,9 @@ void reverse_deletion(int stack_checkpoint){
 				vertex[w].degree++;
 				vertex[w].modified = 1;
 				add_to_degree_list(w);
-                //check if w has maximum_degree
-                if (vertex[w].degree > maximum_degree) {
-                    maximum_degree = vertex[w].degree;
+                //check if w has current_maximum_degree
+                if (vertex[w].degree > current_maximum_degree) {
+                    current_maximum_degree = vertex[w].degree;
                 }
             }
         }
@@ -183,12 +183,12 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 	remove_from_degree_list(merge_into);
 	remove_from_degree_list(other);
 	remove_from_degree_list(triggerer);
-	if(maximum_degree > 0 && degree_list[maximum_degree] == -1 && (vertex[merge_into].degree == maximum_degree 
-			||	vertex[other].degree == maximum_degree 
-			||	vertex[triggerer].degree == maximum_degree)) {
+	if(current_maximum_degree > 0 && degree_list[current_maximum_degree] == -1 && (vertex[merge_into].degree == current_maximum_degree 
+			||	vertex[other].degree == current_maximum_degree 
+			||	vertex[triggerer].degree == current_maximum_degree)) {
 		// find new max degree
-		while(degree_list[maximum_degree] == -1){
-			maximum_degree--;
+		while(degree_list[current_maximum_degree] == -1){
+			current_maximum_degree--;
 		}
 	}
 	
@@ -221,10 +221,10 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 				vertex[v].degree--;
 				add_to_degree_list(v);
 				// check if v was max_degree, unless v had degree 0 (occurs in instance 2 1 \n 1 2)
-				if(maximum_degree > 0 && vertex[v].degree+1 == maximum_degree && degree_list[maximum_degree] == -1){
+				if(current_maximum_degree > 0 && vertex[v].degree+1 == current_maximum_degree && degree_list[current_maximum_degree] == -1){
 					// find new max degree
-					while(degree_list[maximum_degree] == -1){
-						maximum_degree--;
+					while(degree_list[current_maximum_degree] == -1){
+						current_maximum_degree--;
 					}
 				}
 				j++;
@@ -268,14 +268,14 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 		j++;	
 	}
 
-	if(new_index > maximum_degree){
+	if(new_index > current_maximum_degree){
 		   if(new_index > initial_maximum_degree){ 
 				   degree_list = realloc(degree_list, sizeof(int) * (new_index + 1));
-				   for(int i = maximum_degree + 1; i <= new_index; i++){
+				   for(int i = current_maximum_degree + 1; i <= new_index; i++){
 						   degree_list[i] = -1;
 				   }
 		   }
-		   maximum_degree = new_index;
+		   current_maximum_degree = new_index;
 	}       
 	
 	new_adj = realloc(new_adj, sizeof(int) * new_index);

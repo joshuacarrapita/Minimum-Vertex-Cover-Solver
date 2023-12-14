@@ -58,12 +58,12 @@ void parseinput(){
 			vertex[w].adj = realloc(vertex[w].adj, sizeof(int) * vertex[w].degree);
 			vertex[w].adj[vertex[w].degree - 1] = v;
 
-			// update maximum_degree if necessary
-			if (vertex[v].degree > maximum_degree) {
-				maximum_degree = vertex[v].degree;
+			// update current_maximum_degree if necessary
+			if (vertex[v].degree > current_maximum_degree) {
+				current_maximum_degree = vertex[v].degree;
 			}
-			if (vertex[w].degree > maximum_degree) {
-				maximum_degree =vertex[w].degree;
+			if (vertex[w].degree > current_maximum_degree) {
+				current_maximum_degree =vertex[w].degree;
 			}
 
 			counter_edges++;

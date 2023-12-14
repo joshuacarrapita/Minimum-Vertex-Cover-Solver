@@ -43,7 +43,7 @@ void remove_from_degree_list(unsigned int v);
  * put it on the deletion_stack, 
  * remove it from its degree list,
  * update the degrees and degree lists of all its neighbours, 
- * reduce maximum_degree if a neighbour was the only one with that degree
+ * reduce current_maximum_degree if a neighbour was the only one with that degree
  */
 
 void delete_vertex(unsigned int v, bool put_in_vc);

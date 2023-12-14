@@ -19,13 +19,12 @@ unsigned int highest_remaining_k;
 
 Vertex *vertex;
 
-
 int initial_maximum_degree;
-int maximum_degree; // holds the value for the highest degree found in the graph
+int current_maximum_degree; //holds the value for the highest degree found in the graph
 int *degree_list; 
 
 int *deletion_stack;
-int stack_top = -1; // index of the "topmost" / "most recently added" stack entry
+int stack_top = -1; //index of the "topmost"/"most recently added" stack entry
 				
 Merge **merge_stack;
 int merge_stack_top = -1;
@@ -35,19 +34,19 @@ bool timeout;
 
 unsigned int calc_lower_bound(){
     unsigned int result = 0;
-    if( maximum_degree > 0 ) { // don't divide by 0 when edges == max_degree == 0
-		result = (current_amt_edges + (maximum_degree-1))/maximum_degree; // weird term rounds up
+    if( current_maximum_degree > 0 ) { // don't divide by 0 when edges == max_degree == 0
+		result = (current_amt_edges + (current_maximum_degree-1))/current_maximum_degree; // weird term rounds up
 	}
     return result;
 }
 
 unsigned int calc_upper_bound(){
 	unsigned int result = 0;
-	if (maximum_degree == 0) { // recursion hook, all edges removed
+	if (current_maximum_degree == 0) { // recursion hook, all edges removed
 		return result;
 	}
 	// find max degree vertex v, calculate on G-{v}
-	unsigned int v = degree_list[maximum_degree]; 
+	unsigned int v = degree_list[current_maximum_degree]; 
 	delete_vertex(v,1);
 	result = 1 + calc_upper_bound(); // update size of vc by +1 for v
     return result;
@@ -147,7 +146,7 @@ unsigned int data_reduction(bool should_merge) {
 	while(!done){
 		found = false;
 		//degree 0 rule 
-		if (maximum_degree == 0) { // In case there is only a degree 0 list
+		if (current_maximum_degree == 0) { // In case there is only a degree 0 list
 			return k;
 		}
 		
@@ -174,7 +173,7 @@ unsigned int data_reduction(bool should_merge) {
 		if (found) continue;
 
 		//degree 2-rule
-		if(maximum_degree >= 2){
+		if(current_maximum_degree >= 2){
 			unsigned int v = degree_list[2];
 			while(v != -1 && !found){
 				//get the two neighbors
@@ -224,7 +223,7 @@ unsigned int data_reduction(bool should_merge) {
 		if (found) continue;
 
 		//domination-rule
-		for(int i = 2; i <= maximum_degree; i++){
+		for(int i = 2; i <= current_maximum_degree; i++){
 			int current_vertex = degree_list[i];
 			while(current_vertex != -1){
 				int dominator = is_dominated(current_vertex);
@@ -260,9 +259,9 @@ bool vc_branch(int k){
         return false;
     }
 	// graph is edgless => vertex_cover of size k
-	// TODO: IMO this could be maximum_degree == 0, there is no situation where
+	// TODO: IMO this could be current_maximum_degree == 0, there is no situation where
 	// it should be negative
-    if (maximum_degree <= 0) { 
+    if (current_maximum_degree <= 0) { 
 		highest_remaining_k = k;
         return true;
     }
@@ -271,7 +270,7 @@ bool vc_branch(int k){
 
 
 	// pick a vertex of maximum degree (this is an attempt at an heuristic)
-    unsigned int v = degree_list[maximum_degree]; 
+    unsigned int v = degree_list[current_maximum_degree]; 
     int stack_checkpoint = stack_top;
 	delete_vertex(v, 1);
 	if (vc_branch(k - 1)) {
@@ -310,11 +309,11 @@ bool vc_branch(int k){
 }
 
 void initialize_globals(){
-	maximum_degree = 0;
+	current_maximum_degree = 0;
 
 	parseinput();
 
-	initial_maximum_degree = maximum_degree;
+	initial_maximum_degree = current_maximum_degree;
 	current_amt_edges = total_amt_edges;
 	current_amt_vertices = 0;
 
@@ -328,8 +327,8 @@ void initialize_globals(){
 	 * -> set first elements of all degree lists to -1 (symbolises NULL)
 	 * -> add each vertex to its corresponding degree list
 	 */
-	degree_list = malloc(sizeof(int) * (maximum_degree + 1));
-	for (int i = 0; i <= maximum_degree; i++) degree_list[i] = -1;
+	degree_list = malloc(sizeof(int) * (current_maximum_degree + 1));
+	for (int i = 0; i <= current_maximum_degree; i++) degree_list[i] = -1;
 	for (int i = 0; i < total_amt_vertices; i++) {
 		vertex[i].adj_size = vertex[i].degree;
 		if(vertex[i].degree > 0){

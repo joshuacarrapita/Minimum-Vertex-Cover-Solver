@@ -18,6 +18,9 @@ extern unsigned int highest_remaining_k;
 extern Vertex *vertex;
 
 #define MAX 100
+#define NO_REVERSE -2
+#define NO_MERGE 0
+#define MERGE 1
 
 extern int initial_maximum_degree;
 extern int current_maximum_degree; // holds the value for the highest degree found in the graph
@@ -51,7 +54,7 @@ extern int merge_stack_top;
 //////////////////////////////////////////////////////////////////////////
 unsigned int calc_lower_bound();
 
-unsigned int calc_upper_bound();
+unsigned int calc_upper_bound(int reverse_point);
 
 unsigned int data_reduction(bool should_merge);
 

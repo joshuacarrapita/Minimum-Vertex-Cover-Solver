@@ -21,7 +21,7 @@ unsigned int highest_remaining_k;
 Vertex *vertex;
 
 int initial_maximum_degree;
-int current_maximum_degree; //holds the value for the highest degree found in the graph
+int current_maximum_degree; 
 int *degree_list; 
 
 int *deletion_stack;
@@ -33,6 +33,7 @@ int merge_stack_top = -1;
 time_t start_time;
 bool timeout;
 
+
 unsigned int calc_lower_bound(){
     unsigned int result = 0;
     if( current_maximum_degree > 0 ) { // don't divide by 0 when edges == max_degree == 0
@@ -41,7 +42,7 @@ unsigned int calc_lower_bound(){
     return result;
 }
 
-unsigned int calc_upper_bound(){
+unsigned int calc_upper_bound(int reverse_point){
 	unsigned int result = 0;
 	if (current_maximum_degree == 0) { // recursion hook, all edges removed
 		return result;
@@ -49,7 +50,10 @@ unsigned int calc_upper_bound(){
 	// find max degree vertex v, calculate on G-{v}
 	unsigned int v = degree_list[current_maximum_degree]; 
 	delete_vertex(v,1);
-	result = 1 + calc_upper_bound(); // update size of vc by +1 for v
+	result = 1 + calc_upper_bound(NO_REVERSE); // update size of vc by +1 for v
+	if (reverse_point != NO_REVERSE) {
+		reverse_deletion(reverse_point);
+	}
     return result;
 }
 
@@ -255,7 +259,7 @@ bool vc_branch(int k){
 		}
 	}
     //TODO: reduce data
-    k -= data_reduction(false);
+    k -= data_reduction(NO_MERGE);
     if (k < 0) { // Recursion hook, no vertex cover was found
         return false;
     }
@@ -279,7 +283,7 @@ bool vc_branch(int k){
     }
 	
 
-	if(timeout ) return false;
+	if(timeout) return false;
 	//no solution of size k with v
     reverse_deletion(stack_checkpoint);
     int degree_v = vertex[v].degree;//need the current degree, because after deleting the neighborhood deg[v] = 0
@@ -299,7 +303,7 @@ bool vc_branch(int k){
     }
 
 	/*
-	 * check with all neighnors in vc
+	 * check with all neighbours in vc
 	 */ 
     if (vc_branch(k - degree_v)) {
         return true; // it makes a vertex cover of size k with our deleted ones
@@ -360,12 +364,12 @@ int main(void){
 		if(vertex[i].used == 0 && vertex[i].degree > 0) current_amt_vertices++;
 	}
 	
-	difference += data_reduction(true);
+	difference += data_reduction(MERGE);
 
 	if(!timeout){
 		stack_top = -1;//first reduction is never reversed
 		lower_bound = calc_lower_bound();
-		upper_bound = calc_upper_bound();
+		upper_bound = calc_upper_bound(NO_REVERSE);
 		
 		if (lower_bound < upper_bound ) { 
 			/*
@@ -380,7 +384,7 @@ int main(void){
 			
 				if(vc_branch(k)) {
 					upper_bound = k - highest_remaining_k;
-				} else {
+				} else if (!timeout) {
 					lower_bound = k+1;
 				}
 				k = lower_bound + (upper_bound-lower_bound)/2;

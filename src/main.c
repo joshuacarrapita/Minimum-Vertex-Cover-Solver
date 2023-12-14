@@ -14,6 +14,7 @@ unsigned int total_amt_edges;
 unsigned int current_amt_vertices;
 unsigned int current_amt_edges;
 
+unsigned int lower_bound;
 unsigned int upper_bound;
 unsigned int highest_remaining_k;
 
@@ -363,7 +364,7 @@ int main(void){
 
 	if(!timeout){
 		stack_top = -1;//first reduction is never reversed
-		unsigned int lower_bound = calc_lower_bound();
+		lower_bound = calc_lower_bound();
 		upper_bound = calc_upper_bound();
 		
 		if (lower_bound < upper_bound ) { 
@@ -393,10 +394,7 @@ int main(void){
     //////////////////////////////////////////////////////////////////////////
     //// print solution
     //////////////////////////////////////////////////////////////////////////
-	
-	if(current_amt_edges == 0) current_amt_vertices = 0;
-	print_reduction_solution();
-    print_solution_graph(difference);
+	printf(lower_bound);
 	
     return 0;
 }

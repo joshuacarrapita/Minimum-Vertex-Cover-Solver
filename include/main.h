@@ -13,6 +13,7 @@ extern unsigned int current_amt_vertices;
 extern unsigned int current_amt_edges;
 
 extern unsigned int upper_bound;
+extern unsigned int lower_bound;
 extern unsigned int highest_remaining_k;
 extern Vertex *vertex;
 

@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////////////////////////
 //// in
 //////////////////////////////////////////////////////////////////////////
-void parseinput(){
+void parse_input(){
 	// prepare line reading
 	char line[MAX];
 	char *line_ptr = line;	
@@ -41,7 +41,6 @@ void parseinput(){
 	while (counter_edges < total_amt_edges) {
 		line_ptr = fgets(line, MAX, stdin);
 		if (line[0] != '#' && line_ptr) { // skip comments
-							  
 			// get vertices v and w of edge
 			ptr = strtok(line, " ");
 			unsigned int v = (unsigned int) strtol(ptr, (char **) NULL, 10) - 1;
@@ -63,7 +62,7 @@ void parseinput(){
 				current_maximum_degree = vertex[v].degree;
 			}
 			if (vertex[w].degree > current_maximum_degree) {
-				current_maximum_degree =vertex[w].degree;
+				current_maximum_degree = vertex[w].degree;
 			}
 
 			counter_edges++;
@@ -71,44 +70,9 @@ void parseinput(){
 	}
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 //// out
 //////////////////////////////////////////////////////////////////////////
-void print_reduction_solution(){
-	printf("#STARTReductionResult\n");
-	for (int i = 0; i < total_amt_vertices; i++) {
-			if (vertex[i].used == 2) {
-				printf("#%d\n", i+1);
-			}
-	}	
-	printf("#ENDReductionResult\n");
-	printf("#STARTMerge\n");
-	printf("#%d\n", merge_stack_top +1);
-	for(int i = 0; i < merge_stack_top+1; i++){
-		printf("#%d,%d,%d\n", merge_stack[i]->merge_into +1, merge_stack[i]->other +1, merge_stack[i]->triggerer +1);	
-	}	
-	printf("#ENDMerge\n");
-}
-
-void print_solution_graph(unsigned int difference){
-	// print header
-	printf("# difference: %d\n", difference);
-	printf("%d %d\n", current_amt_vertices,current_amt_edges);
-
-	// print edges
-	if(current_amt_edges != 0){
-		for (int v = 0; v < total_amt_vertices; v++) {
-			if (vertex[v].used == 0) {
-				for (int i = 0; i < vertex[v].adj_size; i++) {
-
-					if( vertex[vertex[v].adj[i]].used == 0){
-						printf("%d %d\n", v+1, vertex[v].adj[i]+1);
-					}
-				}
-				delete_vertex( v, 0); // don't need the graph after kernel
-			}
-		}
-	}
-	printf("\n");
+void print_lower_bound(){
+	printf(lower_bound);
 }

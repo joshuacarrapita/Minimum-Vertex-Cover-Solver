@@ -312,7 +312,7 @@ bool vc_branch(int k){
 void initialize_globals(){
 	current_maximum_degree = 0;
 
-	parseinput();
+	parse_input();
 
 	initial_maximum_degree = current_maximum_degree;
 	current_amt_edges = total_amt_edges;
@@ -394,7 +394,7 @@ int main(void){
     //////////////////////////////////////////////////////////////////////////
     //// print solution
     //////////////////////////////////////////////////////////////////////////
-	printf(lower_bound);
+	print_lower_bound();
 	
     return 0;
 }

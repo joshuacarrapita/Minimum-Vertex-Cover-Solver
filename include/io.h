@@ -1,14 +1,11 @@
 #ifndef KERNEL_INCLUDE_IO_H
 #define KERNEL_INCLUDE_IO_H
 
-/*
- * Parses stdin input into vertex array
- */
-void parseinput();
+// Parses stdin input into vertex array
+void parse_input();
 
-void print_reduction_solution();
-
-void print_solution_graph(unsigned int difference);
+// Prints current lower_bound
+void print_lower_bound();
 
 #endif
 

@@ -44,6 +44,7 @@ void reset_cliques(){
 
 unsigned int calc_clique_cover(){
 	reset_cliques();
+
 	for(int i = current_maximum_degree; i > 0; i--){// check for all vertices descending in degree
 		int current_vertex = degree_list[i];
 		
@@ -91,7 +92,13 @@ unsigned int calc_clique_cover(){
 	}
 
 	//TODO: calcutlate result or maybe delete all vertices that are not in single cliques...	
-		
+	current_amt_vertices = 0;
+	for (int i = 0; i < total_amt_vertices; i++){
+		if (vertex[i].used == 0 && vertex[i].degree > 0) {
+			current_amt_vertices++;
+		}
+	}
+
 	return current_amt_vertices - number_of_cliques;
 }
 

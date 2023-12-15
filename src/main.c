@@ -162,7 +162,7 @@ unsigned int data_reduction(bool should_merge) {
 		while (degree_list[1] != -1) {
 			unsigned int v = degree_list[1];
 			for (int i = 0, j = 0; j < 1; i++) {
-				int w = vertex[v].adj[i];
+				unsigned int w = vertex[v].adj[i];
 				if (vertex[w].used == 0) {
 					delete_vertex(v, 0);
 					delete_vertex(w, 1);
@@ -198,12 +198,12 @@ unsigned int data_reduction(bool should_merge) {
 				if(vertex[neighbors[1]].degree < vertex[neighbors[0]].degree) x = 1;
 
 				//check if they are adjacent
-				char are_adj = 0;
+				bool are_adj = false;
 				for(int i = 0, j = 0; j < vertex[neighbors[x]].degree; i++){
 					unsigned int w = vertex[neighbors[x]].adj[i];
 					if(vertex[w].used == 0){
 						if(w == neighbors[(x +1)%2]){
-							are_adj = 1;
+							are_adj = true;
 							break;
 						}
 						j++;
@@ -324,7 +324,7 @@ void initialize_globals(){
 
 	initial_maximum_degree = current_maximum_degree;
 	current_amt_edges = total_amt_edges;
-	current_amt_vertices = total_amt_vertices;
+    current_amt_vertices = 0;
 
 	// alloc deletion_stack mem and init with standard content
 	deletion_stack = malloc(total_amt_vertices * sizeof(int));
@@ -348,9 +348,6 @@ void initialize_globals(){
 		}
 		if(vertex[i].degree > 1) sort(vertex[i].adj, vertex[i].adj_size);
 	}
-
-	lower_bound = calc_lower_bound();
-	upper_bound = calc_upper_bound(deletion_stack_top);
 }
 
 int main(void){
@@ -366,22 +363,22 @@ int main(void){
     //////////////////////////////////////////////////////////////////////////
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
-    unsigned int init_lower_bound = do_lp();
-	current_amt_vertices = 0;
-	for(int i = 0; i < total_amt_vertices; i++){
-		if(vertex[i].used == 0 && vertex[i].degree > 0) current_amt_vertices++;
-	}
+    //unsigned int init_lower_bound = do_lp();
+    unsigned int init_lower_bound = 0;
+
 	init_lower_bound += data_reduction(MERGE);
+
 	deletion_stack_top = -1;//first reduction is never reversed
-	if (init_lower_bound == total_amt_vertices) {
-		lower_bound = init_lower_bound;
-		upper_bound = init_lower_bound;
+
+	if (current_amt_vertices == 0) { //all vertices are reduced
+		lower_bound = 0;
+		upper_bound = 0;
 	} else {
 		lower_bound = calc_lower_bound();
 		upper_bound = calc_upper_bound(NO_REVERSE);
 	}
 
-	if(!timeout){
+	if(!timeout && 0){
 		if (lower_bound < upper_bound ) { 
 			/*
 			 * search for lowest vertex_cover of size k

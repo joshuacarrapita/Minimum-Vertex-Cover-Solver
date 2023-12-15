@@ -4,7 +4,7 @@
 #include "clique.h"
 
 typedef struct Vertex{
-    int *adj; //adjency list of vertex
+    unsigned int *adj; //adjency list of vertex
 	int adj_size; //currentsize of adj aray
     char used;//is vertex untouched(0), deleted(1) or in vc (2)
 	char modified; //is vertex modified by last reduction

@@ -42,8 +42,8 @@ void delete_vertex(unsigned int v, bool put_in_vc){
 	} else {
         vertex[v].used = 1; // v gets deleted but not put in v cover
 	}
-
 	// we only want "active" vertices in the degree lists
+
 	remove_from_degree_list(v);
 	current_amt_edges -= vertex[v].degree;
 	current_amt_vertices -= 1;
@@ -71,7 +71,6 @@ void delete_vertex(unsigned int v, bool put_in_vc){
 			}
 			vertex[w].degree--;
 			vertex[w].modified = 1;
-
 			add_to_degree_list(w);
         }
     }
@@ -83,9 +82,10 @@ void reverse_deletion(int stack_checkpoint){
 		// get the most recently deleted vertex
         unsigned int v = deletion_stack[deletion_stack_top];
         vertex[v].used = 0; // set its status to "untouched"
+		
         add_to_degree_list(v); // add it to its corresponding degree list
 		current_amt_edges += vertex[v].degree;
-		current_amt_vertices += 1;
+		current_amt_vertices++;
 
 		// I reallocated the current_maximum_degree update into add_to_degree_list //L: i think either both in lists function or neither, since we cant do it for the other, lets keep it here
 		// if v has the highest degree now
@@ -103,6 +103,7 @@ void reverse_deletion(int stack_checkpoint){
 				vertex[w].degree++;
 				vertex[w].modified = 1;
 				add_to_degree_list(w);
+
                 //check if w has current_maximum_degree
                 if (vertex[w].degree > current_maximum_degree) {
                     current_maximum_degree = vertex[w].degree;

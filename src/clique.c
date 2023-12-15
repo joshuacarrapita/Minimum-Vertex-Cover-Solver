@@ -44,22 +44,23 @@ void reset_cliques(){
 
 unsigned int calc_clique_cover(){
 	reset_cliques();
+	if(current_maximum_degree == 0) return 0;
 
-	for(int i = current_maximum_degree; i > 0; i--){// check for all vertices descending in degree
+	for(int i = 1; i <= current_maximum_degree; i++){// check for all vertices descending in degree
 		int current_vertex = degree_list[i];
 		
 		while(current_vertex != -1){
 			Clique **clique_array = NULL; 
 			int clique_array_size = 0;
 
-			for(int j = vertex[current_vertex].adj_size - 1; j > 0; j--){
+			for(int j = 0; j < vertex[current_vertex].adj_size ; j++){
 				unsigned int w = vertex[current_vertex].adj[j];
 				if(vertex[w].used != 0) continue; 
 
 				Clique *clique = vertex[w].clique;
 				//if clique is null
 				if(!clique){
-					if(vertex[w].degree < vertex[current_vertex].degree){
+					if(vertex[w].degree > vertex[current_vertex].degree){
 						break;
 					}else{
 						continue;

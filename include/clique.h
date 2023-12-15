@@ -4,8 +4,7 @@
 typedef struct Clique{
 	unsigned int *vertices;
 	unsigned int size;
-	struct Clique *next;
-	struct Clique *prev;
+	unsigned int counter;
 } Clique;
 
 void new_clique(unsigned int vertex);

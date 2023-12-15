@@ -324,7 +324,7 @@ void initialize_globals(){
 
 	initial_maximum_degree = current_maximum_degree;
 	current_amt_edges = total_amt_edges;
-	current_amt_vertices = total_amt_vertices;
+    current_amt_vertices = total_amt_vertices;
 
 	// alloc deletion_stack mem and init with standard content
 	deletion_stack = malloc(total_amt_vertices * sizeof(int));
@@ -344,13 +344,11 @@ void initialize_globals(){
 		vertex[i].adj_size = vertex[i].degree;
 		if(vertex[i].degree > 0){
 			add_to_degree_list(i); // 0-list has no effect
-			current_amt_vertices++;
-		}
+        }else{
+            delete_vertex(i, false);
+        }
 		if(vertex[i].degree > 1) sort(vertex[i].adj, vertex[i].adj_size);
 	}
-
-	lower_bound = calc_lower_bound();
-	upper_bound = calc_upper_bound(deletion_stack_top);
 }
 
 int main(void){
@@ -366,14 +364,14 @@ int main(void){
     //////////////////////////////////////////////////////////////////////////
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
-    unsigned int init_lower_bound = do_lp();
-	current_amt_vertices = 0;
-	for(int i = 0; i < total_amt_vertices; i++){
-		if(vertex[i].used == 0 && vertex[i].degree > 0) current_amt_vertices++;
-	}
+    //unsigned int init_lower_bound = do_lp();
+    unsigned int init_lower_bound = 0;
+
 	init_lower_bound += data_reduction(MERGE);
+
 	deletion_stack_top = -1;//first reduction is never reversed
-	if (init_lower_bound == total_amt_vertices) {
+
+	if (current_amt_vertices == 0) { //all vertices are reduced
 		lower_bound = init_lower_bound;
 		upper_bound = init_lower_bound;
 	} else {
@@ -381,7 +379,7 @@ int main(void){
 		upper_bound = calc_upper_bound(NO_REVERSE);
 	}
 
-	if(!timeout){
+	if(!timeout && 0){
 		if (lower_bound < upper_bound ) { 
 			/*
 			 * search for lowest vertex_cover of size k

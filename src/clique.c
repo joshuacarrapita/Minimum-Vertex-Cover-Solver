@@ -4,83 +4,28 @@
 #include "graph.h"
 #include "clique.h"
 
-Clique **clique_lists;
-unsigned int clique_lists_size = 0;
-unsigned int number_of_cliques = 0;
+unsigned int number_of_cliques;
 
-unsigned int max_clique_size = 0;
-
-void new_clique(unsigned int vertex){
+void new_clique(unsigned int v){
 	//create new Clique with only vertex in it	
 	Clique *new_clique = calloc(1,sizeof(Clique));
 
 	new_clique->vertices = calloc(1,sizeof(int));
-	new_clique->vertices[0] = vertex;
+	new_clique->vertices[0] = v;
 
 	new_clique->size = 1;
-	new_clique->next = NULL;
-	new_clique->prev = NULL;
-	if(!max_clique_size) max_clique_size++;
 	
-	add_to_clique_lists(new_clique);
+	vertex[v].clique = new_clique;
 	number_of_cliques++;	
 }
 
-void remove_from_clique_lists(Clique *clique){
-	//TODO: remove from current clique list
-	unsigned int list_index = clique->size-1; // get clique lists index
-	// update list head and max_clique_size if needed
-	if (clique_lists[list_index] == clique) {
-		clique_lists[list_index] = clique->next;
-		if (!clique->next && clique->size == max_clique_size) {
-			max_clique_size--;
-			while (list_index > 0) {
-				list_index--;
-				max_clique_size--;
-				if (clique_lists[list_index]) {
-					max_clique_size = list_index+1;
-					break;
-				}
-			}
-		}
-	}
-	// connect prev and next if needed
-	Clique* next_clique = clique->next;
-	Clique* prev_clique = clique->prev;
-	if (next_clique) next_clique->prev = prev_clique;
-	if (prev_clique) prev_clique->next = next_clique;
-	// reset pointers as clique is currently in no list
-	clique->next = NULL;
-	clique->prev = NULL;
-}
+void add_to_clique(Clique *clique, unsigned int v){
+	clique->vertices = realloc(clique->vertices, sizeof(int) * ++clique->size);
+	clique->vertices[clique->size-1] = v;
 
-void add_to_clique_lists(Clique *clique){
-	//TODO: add to clique_list of the right size	
-	if (clique_lists_size < current_maximum_degree) {
-		clique_lists = realloc(clique_lists, current_maximum_degree * sizeof(Clique *));
-		for (int i = clique_lists_size; i < current_maximum_degree; i++){
-			clique_lists[i] = NULL;
-		}
-		clique_lists_size = current_maximum_degree;
-	}
-	unsigned int list_index = clique->size-1; // get clique lists index
-	Clique* first = clique_lists[list_index]; // get list head
-	clique_lists[list_index] = clique; // ours is new head
-	if (first) first->prev = clique; // and comes before old head
-	clique->next = first;
-	clique->prev = NULL;
-}
-
-void add_to_clique(Clique *clique, unsigned int vertex){
-	remove_from_clique_lists(clique);
-	clique->size++;
-	clique->vertices = realloc(clique->vertices, sizeof(int) * clique->size);
-	clique->vertices[clique->size-1] = vertex;
-	if(clique->size > max_clique_size){
-		max_clique_size = clique->size;
-	}
-	add_to_clique_lists(clique);
 	sort(clique->vertices, clique->size);
+
+	vertex[v].clique = clique;
 }
 
 bool in_clique(Clique *clique, unsigned int v){
@@ -106,37 +51,72 @@ bool in_clique(Clique *clique, unsigned int v){
 	return true;
 }
 
-unsigned int calc_clique_cover(){
-	clique_lists = malloc(current_maximum_degree * sizeof(Clique *));
-	clique_lists_size = current_maximum_degree;
-	for(int i = 0; i < current_maximum_degree; i++){
-		clique_lists[i] = NULL;
+void reset_cliques(){
+	for(int i = 0; i < total_amt_vertices; i++){
+		if(vertex[i].clique){
+			Clique *clique = vertex[i].clique;
+			for(int j = 0; j < clique->size; j++)	{
+				unsigned int w = clique->vertices[j];
+				vertex[w].clique = NULL;
+			}
+			free(clique);
+		}
 	}
+	number_of_cliques = 0;
+}
 
+unsigned int calc_clique_cover(){
+	reset_cliques();
 	for(int i = current_maximum_degree; i > 0; i--){// check for all vertices descending in degree
-		unsigned int current_vertex = degree_list[i];
-		bool found_clique = false;
+													//:w
+													//
+		int current_vertex = degree_list[i];
+		
 		while(current_vertex != -1){
-			for(int j = i; j > 0; j--){//check for vertice for all cliques in descending size
-				Clique *clique = clique_lists[j-1];		
-				while(clique){
-					if(in_clique(clique, current_vertex)){
-						add_to_clique(clique, current_vertex);
-						found_clique = true;
+			Clique **clique_array = NULL; 
+			int clique_array_size = 0;
+
+			for(int j = vertex[current_vertex].adj_size; j > 0; j--){
+				unsigned int w = vertex[current_vertex].adj[j];
+				if(vertex[w].used != 0) continue; 
+
+				Clique *clique = vertex[w].clique;
+				//if clique is null
+				if(!clique){
+					if(vertex[w].degree < vertex[current_vertex].degree){
 						break;
-					}else{ //get next clique
-						clique = clique->next; 
+					}else{
+						continue;
 					}
+				} 
+				//w is in clique
+				if(!clique->counter){
+					clique_array = realloc(clique_array, sizeof(Clique *) * ++clique_array_size);
+					clique_array[clique_array_size - 1] = clique;
 				}
-				if(found_clique) break;
+				clique->counter++;
 			}
-			if(!found_clique){
+			Clique *max_size_clique = NULL;
+			for(int j = 0; j < clique_array_size; j++){
+				Clique *clique = clique_array[j];
+				if(clique->counter == clique->size && (!max_size_clique || clique->size > max_size_clique->size)){
+					max_size_clique = clique;
+				}
+				clique->counter = 0;
+			}
+
+			if(!max_size_clique){
 				new_clique(current_vertex);
+			}else{
+				add_to_clique(max_size_clique, current_vertex);
 			}
+			free(clique_array);
 			current_vertex = vertex[current_vertex].degree_list_next;
+
 		}
 	}
 
 	//TODO: calcutlate result or maybe delete all vertices that are not in single cliques...	
+		
 	return current_amt_vertices - number_of_cliques;
 }

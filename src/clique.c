@@ -76,7 +76,7 @@ unsigned int calc_clique_cover(){
 			Clique **clique_array = NULL; 
 			int clique_array_size = 0;
 
-			for(int j = vertex[current_vertex].adj_size; j > 0; j--){
+			for(int j = vertex[current_vertex].adj_size - 1; j > 0; j--){
 				unsigned int w = vertex[current_vertex].adj[j];
 				if(vertex[w].used != 0) continue; 
 

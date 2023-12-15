@@ -162,9 +162,8 @@ unsigned int data_reduction(bool should_merge) {
 		while (degree_list[1] != -1) {
 			unsigned int v = degree_list[1];
 			for (int i = 0, j = 0; j < 1; i++) {
-				int w = vertex[v].adj[i];
+				unsigned int w = vertex[v].adj[i];
 				if (vertex[w].used == 0) {
-					delete_vertex(v, 0);
 					delete_vertex(w, 1);
 					j++;
 					k++;
@@ -198,19 +197,19 @@ unsigned int data_reduction(bool should_merge) {
 				if(vertex[neighbors[1]].degree < vertex[neighbors[0]].degree) x = 1;
 
 				//check if they are adjacent
-				char are_adj = 0;
+				bool are_adj = false;
 				for(int i = 0, j = 0; j < vertex[neighbors[x]].degree; i++){
 					unsigned int w = vertex[neighbors[x]].adj[i];
 					if(vertex[w].used == 0){
 						if(w == neighbors[(x +1)%2]){
-							are_adj = 1;
+							are_adj = true;
 							break;
 						}
 						j++;
 					}
 				}
 				if(are_adj){ //triangle rule
-					delete_vertex(v, 0);
+					//delete_vertex(v, 0);
 					delete_vertex(neighbors[0], 1);
 					delete_vertex(neighbors[1], 1);
 					k += 2;
@@ -372,8 +371,8 @@ int main(void){
 	deletion_stack_top = -1;//first reduction is never reversed
 
 	if (current_amt_vertices == 0) { //all vertices are reduced
-		lower_bound = init_lower_bound;
-		upper_bound = init_lower_bound;
+		lower_bound = 0;
+		upper_bound = 0;
 	} else {
 		lower_bound = calc_lower_bound();
 		upper_bound = calc_upper_bound(NO_REVERSE);

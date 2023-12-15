@@ -44,7 +44,7 @@ void reset_cliques(){
 
 unsigned int calc_clique_cover(){
 	reset_cliques();
-	if(current_maximum_degree == 0) return 0;
+	//if(current_maximum_degree == 0) return 0;
 
 	for(int i = 1; i <= current_maximum_degree; i++){// check for all vertices descending in degree
 		int current_vertex = degree_list[i];
@@ -59,12 +59,8 @@ unsigned int calc_clique_cover(){
 
 				Clique *clique = vertex[w].clique;
 				//if clique is null
-				if(!clique){
-					if(vertex[w].degree > vertex[current_vertex].degree){
-						break;
-					}else{
-						continue;
-					}
+				if(clique == NULL){
+					continue;
 				} 
 				//w is in clique
 				if(!clique->counter){
@@ -76,7 +72,7 @@ unsigned int calc_clique_cover(){
 			Clique *max_size_clique = NULL;
 			for(int j = 0; j < clique_array_size; j++){
 				Clique *clique = clique_array[j];
-				if(clique->counter == clique->size && (!max_size_clique || clique->size > max_size_clique->size)){
+				if(clique->counter == clique->size && (!max_size_clique || clique->size >= max_size_clique->size)){
 					max_size_clique = clique;
 				}
 				clique->counter = 0;

@@ -37,11 +37,16 @@ void bpm(int* l, int* r) {
     left = l;
     right = r;
 	for (int i=0; i<total_amt_vertices; i++) {
-        right[i] = -2;
-	    left[i] = -2;
+        if (vertex[i].used == 0) {
+            right[i] = -2;
+	        left[i] = -2;
+        } else {
+            right[i] = -1;
+            left[i] = -1;
+        }
     }
 
-	int* r_free = malloc(sizeof(int) * total_amt_vertices);
+	/*int* r_free = malloc(sizeof(int) * total_amt_vertices);
 	int end_free = 0;
 	for (int i = 0; i < total_amt_vertices; i++){
 		if (right[i] <= -2) {
@@ -49,7 +54,7 @@ void bpm(int* l, int* r) {
 			end_free++;
 		}
 		
-	}
+	}*/
 	dist = malloc(sizeof(int) * total_amt_vertices);
 
 	int* queue = malloc(sizeof(int) * (total_amt_vertices+1));
@@ -75,7 +80,7 @@ void bpm(int* l, int* r) {
 						dist_nil = dist[curr] + 1;
 						queue[end] = -2;
 						end++;
-					} else if (dist[next] == INT_MAX) {
+					} else if (next >= 0 && dist[next] == INT_MAX) {
 						dist[next] = dist[curr] + 1;
 						queue[end] = next;
 						end++;
@@ -84,16 +89,14 @@ void bpm(int* l, int* r) {
 			}
 		}
 		if (dist_nil == INT_MAX) break;
-
 		for (int i = 0; i < total_amt_vertices; i++) {
 			if (right[i] == -2) {
 				helper2(i);
 			}
 		}
 	}
-
     free(dist);
-    free(r_free);
+    //free(r_free);
     free(queue);
 }
 

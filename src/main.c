@@ -83,7 +83,7 @@ unsigned int do_lp(){
     char t_reached = 0;
 
     for (unsigned int i = 0; i < total_amt_vertices; i++) {
-        if (left[i] <= -1) {
+        if (left[i] <= -2) {
             queue_l[l_max] = i;
             l_max++;
             reach_l[i] = 1;
@@ -94,9 +94,10 @@ unsigned int do_lp(){
             Vertex v = vertex[queue_l[l_curr]];
             l_curr++;
             for (unsigned int i = 0; i < v.adj_size; i++) {
-                if (!reach_r[v.adj[i]]) {
-                    reach_r[v.adj[i]] = 1;
-                    queue_r[r_max] = v.adj[i];
+                int a = v.adj[i];
+                if (vertex[a].used == 0 && !reach_r[a]) {
+                    reach_r[a] = 1;
+                    queue_r[r_max] = a;
                     r_max++;
                 }
             }
@@ -110,7 +111,7 @@ unsigned int do_lp(){
                     queue_l[l_max] = left[v];
                     l_max++;
                 }
-            }else{
+            }else if (left[v] <= -2) {
 				if(!t_reached) {
 					for (unsigned int i=0; i<total_amt_vertices; i++) {
 						if (right[i] >= 0 && !reach_r[i]) {
@@ -133,7 +134,7 @@ unsigned int do_lp(){
             delete_vertex(i, 1);
             difference++;
         }
-    }   
+    }
 
     free(left);
     free(right);
@@ -174,7 +175,8 @@ unsigned int data_reduction(bool should_merge) {
 		}
 		//stop if not enough time.. 
 		time_t current_time = time(NULL);
-		if(current_time - start_time > 118) {
+		if(current_time - start_time > 56) {
+        // 118
 			timeout = true;
 			return k;
 		}
@@ -230,9 +232,15 @@ unsigned int data_reduction(bool should_merge) {
 			}
 		}
 		if (found) continue;
+        
+        int lp = do_lp();
+        if (lp > 0) {
+            k += lp;
+            continue;
+        }
 
 		//domination-rule
-		for(int i = 2; i <= current_maximum_degree; i++){
+	    for(int i = 2; i <= current_maximum_degree; i++){
 			int current_vertex = degree_list[i];
 			while(current_vertex != -1){
 				int dominator = is_dominated(current_vertex);
@@ -247,7 +255,13 @@ unsigned int data_reduction(bool should_merge) {
 			}
 			if (found) break;
 		}
-		if (!found) done = true;
+        if (found) continue;
+        /*int f = do_lp();
+        if (f > 0) {
+            k += f;
+            found = 1;
+        }*/
+		done = true;
 	}
     return k;
 }
@@ -257,7 +271,7 @@ bool vc_branch(int k){
 		return false;	
 	}else{	
 		time_t current_time = time(NULL);
-		if(current_time - start_time > 118){
+		if(current_time - start_time > 56){
 			timeout = true;
 			return false;
 		}
@@ -364,13 +378,14 @@ int main(void){
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
     //unsigned int init_lower_bound = do_lp();
-    unsigned int init_lower_bound = 0;
+    //unsigned int init_lower_bound = 0;
 
-	init_lower_bound += data_reduction(MERGE);
-
+	//init_lower_bound += data_reduction(MERGE);
+    do_lp();
+    data_reduction(0);
 	deletion_stack_top = -1;//first reduction is never reversed
 
-	if (current_amt_vertices == 0) { //all vertices are reduced
+	/*if (current_amt_vertices == 0) { //all vertices are reduced
 		lower_bound = 0;
 		upper_bound = 0;
 	} else {
@@ -378,15 +393,15 @@ int main(void){
 		upper_bound = calc_upper_bound(NO_REVERSE);
 	}
 
-	if(!timeout && 0){
-		if (lower_bound < upper_bound ) { 
+	if(!timeout){
+		if (lower_bound < upper_bound ) { */
 			/*
 			 * search for lowest vertex_cover of size k
 			 * on if l_b < u_b we can still search, if we get into the while body
 			 * again and they are equal, we need to do the last iteration to set
 			 * the used's right
 			 */
-			int k = lower_bound + (upper_bound-lower_bound)/2;
+			/*int k = lower_bound + (upper_bound-lower_bound)/2;
 			while (!timeout && lower_bound != upper_bound){
 				reverse_deletion(-1);
 			
@@ -400,14 +415,18 @@ int main(void){
 			reverse_deletion(-1);
 			vc_branch(lower_bound);
 		}
-	}
+	}*/
 
-	lower_bound += init_lower_bound;
+	//lower_bound += init_lower_bound;
 
     //////////////////////////////////////////////////////////////////////////
     //// print solution
     //////////////////////////////////////////////////////////////////////////
-	print_lower_bound();
+    while (current_maximum_degree > 0) {
+        delete_vertex(degree_list[current_maximum_degree], 1);
+    }
+
+	print_solution();
 	
     return 0;
 }

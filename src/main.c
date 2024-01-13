@@ -49,11 +49,11 @@ unsigned int calc_upper_bound(int reverse_point){
 	unsigned int result = 0;
 
     while(current_maximum_degree > 0){ // always get the maximum_degree vertex and delete it, data_reduction afterwards
-        unsigned int v = degree_list[current_maximum_degree]; 
-        if(v > -1) {
-            delete_vertex(v, 1);   
-            result++;
-        }
+        int v = degree_list[current_maximum_degree]; 
+         //   printf("Max_degreee = %d\n", current_maximum_degree);
+        delete_vertex(v, 1);   
+        result++;
+        //data_reduction(MERGE);
     }
 
 	if (reverse_point != NO_REVERSE) {
@@ -403,7 +403,9 @@ int main(void){
 		}
 	}
 
-
+    ////recunstruct solution from the merged verticem
+    //recunstruct solution from the merged vertices
+    solution_from_mergeinfo();
     //////////////////////////////////////////////////////////////////////////
     //// print solution
     //////////////////////////////////////////////////////////////////////////

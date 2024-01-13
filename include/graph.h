@@ -29,7 +29,6 @@ typedef struct Merge{
  */
 void add_to_degree_list(unsigned int v);
 
-
 /*
  * INFO: remove a vertex from its degree list (used when it needs to be put
  * into a different degree list for example) and link its predecessor and successor
@@ -48,7 +47,6 @@ void remove_from_degree_list(unsigned int v);
  */
 void delete_vertex(unsigned int v, bool put_in_vc);
 
-
 /*
  * INFO: mark a vertex as "untouched"
  * remove it from the deletion_stack, 
@@ -63,5 +61,8 @@ void sort(unsigned int *array_, unsigned int size);
 
 void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int triggerer);
 
+// INFO: Reconstruct a vertex cover solution from the merge_stack info
+void solution_from_mergeinfo();
+	
 #endif 
 

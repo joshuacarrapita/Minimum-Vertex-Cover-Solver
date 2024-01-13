@@ -313,3 +313,16 @@ void merge_vertices(unsigned int merge_into, unsigned int other, unsigned int tr
 	current_amt_edges += new_index;
 }	
 
+void solution_from_mergeinfo(){
+	int top = merge_stack_top;
+	while(top >= 0){
+		Merge* merge = merge_stack[top]; 
+		if(vertex[merge->merge_into].used == 2){
+			vertex[merge->other].used = 2;	
+		} else {
+			vertex[merge->triggerer].used = 2;
+		}
+		top--;
+	}
+} 
+

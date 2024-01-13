@@ -47,13 +47,12 @@ unsigned int calc_lower_bound(){
 
 unsigned int calc_upper_bound(int reverse_point){
 	unsigned int result = 0;
-
     while(current_maximum_degree > 0){ // always get the maximum_degree vertex and delete it, data_reduction afterwards
         int v = degree_list[current_maximum_degree]; 
          //   printf("Max_degreee = %d\n", current_maximum_degree);
         delete_vertex(v, 1);   
         result++;
-        //data_reduction(MERGE);
+        result += data_reduction(MERGE, true);
     }
 
 	if (reverse_point != NO_REVERSE) {
@@ -148,7 +147,7 @@ unsigned int do_lp(){
 	return difference;
 }	
 
-unsigned int data_reduction(bool should_merge) {
+unsigned int data_reduction(bool should_merge, bool fast) {
     //TODO: more reduction rules
 	bool done = false;
 	bool found = false;
@@ -235,7 +234,7 @@ unsigned int data_reduction(bool should_merge) {
 		if (found) continue;
 
 		//domination-rule
-		for(int i = 2; i <= current_maximum_degree; i++){
+		for(int i = 2; !fast && i <= current_maximum_degree; i++) {
 			int current_vertex = degree_list[i];
 			while(current_vertex != -1){
 				int dominator = is_dominated(current_vertex);
@@ -266,7 +265,7 @@ bool vc_branch(int k){
 		}
 	}
     //TODO: reduce data
-    k -= data_reduction(NO_MERGE);
+    k -= data_reduction(NO_MERGE, true);
     if (k < 0) { // Recursion hook, no vertex cover was found
         return false;
     }
@@ -367,7 +366,7 @@ int main(void){
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
 
-    unsigned int result = data_reduction(MERGE);
+    unsigned int result = data_reduction(MERGE, false);
 
 	deletion_stack_top = -1;//first reduction is never reversed
 

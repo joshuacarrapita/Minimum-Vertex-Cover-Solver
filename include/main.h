@@ -55,7 +55,7 @@ unsigned int calc_lower_bound();
 
 unsigned int calc_upper_bound(int reverse_point);
 
-unsigned int data_reduction(bool should_merge);
+unsigned int data_reduction(bool should_merge, bool fast);
 
 bool vc_branch(int k);
 

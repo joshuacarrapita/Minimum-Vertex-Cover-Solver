@@ -47,16 +47,19 @@ unsigned int calc_lower_bound(){
 
 unsigned int calc_upper_bound(int reverse_point){
 	unsigned int result = 0;
-	if (current_maximum_degree == 0) { // recursion hook, all edges removed
-		return result;
-	}
-	// find max degree vertex v, calculate on G-{v}
-	unsigned int v = degree_list[current_maximum_degree]; 
-	delete_vertex(v,1);
-	result = 1 + calc_upper_bound(NO_REVERSE); // update size of vc by +1 for v
+
+    while(current_maximum_degree > 0){ // always get the maximum_degree vertex and delete it, data_reduction afterwards
+        unsigned int v = degree_list[current_maximum_degree]; 
+        if(v > -1) {
+            delete_vertex(v, 1);   
+            result++;
+        }
+    }
+
 	if (reverse_point != NO_REVERSE) {
 		reverse_deletion(reverse_point);
 	}
+
     return result;
 }
 
@@ -363,10 +366,8 @@ int main(void){
     //////////////////////////////////////////////////////////////////////////
     //// calculate solution 
     //////////////////////////////////////////////////////////////////////////
-    //unsigned int init_lower_bound = do_lp();
-    unsigned int init_lower_bound = 0;
 
-	init_lower_bound += data_reduction(MERGE);
+    unsigned int result = data_reduction(MERGE);
 
 	deletion_stack_top = -1;//first reduction is never reversed
 
@@ -378,7 +379,7 @@ int main(void){
 		upper_bound = calc_upper_bound(NO_REVERSE);
 	}
 
-	if(!timeout && 0){
+	if(!timeout && 0){ // branching turned of for this abgabe
 		if (lower_bound < upper_bound ) { 
 			/*
 			 * search for lowest vertex_cover of size k
@@ -402,12 +403,11 @@ int main(void){
 		}
 	}
 
-	lower_bound += init_lower_bound;
 
     //////////////////////////////////////////////////////////////////////////
     //// print solution
     //////////////////////////////////////////////////////////////////////////
-	print_lower_bound();
-	
+    print_solution();	
+
     return 0;
 }

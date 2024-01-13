@@ -69,7 +69,11 @@ void parse_input(){
 ///////////////////////////////////////////////////////////////////////////////
 //// out
 ///////////////////////////////////////////////////////////////////////////////
-void print_lower_bound(){
-	printf("%d",lower_bound);
-}
+void print_solution(){
+    for (int i = 0; i < total_amt_vertices; i++) {
+        if (vertex[i].used == 2) {
+            printf("%d\n", i+1);
+        }
+    }
 
+}
